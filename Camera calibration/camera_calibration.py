@@ -1,7 +1,10 @@
-# Created on Tue Jun 19 22:42:29 2012
-# @author: Benjamin Lefaudeux (benjamin.lefaudeux@inria.fr)
-
 #!/usr/bin/env python
+
+"""
+Created on Wed Oct 31 14:26:31 2012
+
+@author: Benjamin Lefaudeux (benjamin.lefaudeux@inria.fr)
+"""
 
 import os       # File and folders navigation
 import re

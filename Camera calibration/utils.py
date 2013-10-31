@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+
+#!/usr/bin/env python
+
 """
 Created on Wed Oct 31 14:26:31 2012
 
-@author: imara
+@author: Benjamin Lefaudeux (benjamin.lefaudeux@inria.fr)
 """
 
 import cv2
