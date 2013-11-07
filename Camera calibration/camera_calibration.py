@@ -15,8 +15,6 @@ import sys
 import utils
 import time
 
-
-
 class cameraCalibration:
     def __init__(self):
         self.obj_points = []
@@ -200,8 +198,8 @@ class cameraCalibration:
         pattern_points[:, :2] = np.indices(self.pattern_size).T\
             .reshape(-1, 2)
 
-        cv2.namedWindow("captureStream", cv2.WINDOW_AUTOSIZE)
-        cv2.namedWindow("patternDetection", cv2.WINDOW_AUTOSIZE)
+        cv2.namedWindow("captureStream", cv2.CV_WINDOW_NORMAL) #CV_WINDOW_AUTOSIZE
+        cv2.namedWindow("patternDetection", cv2.CV_WINDOW_NORMAL)
 
         save_files = utils.getAnswer("Would you like \
             to save picture files ? (y/n)  ", 'yn')
@@ -272,6 +270,8 @@ class cameraCalibration:
         b_skip_next = False
         b_reject = False
 
+        cv2.namedWindow("patternDetection") #CV_WINDOW_AUTOSIZE
+
         print "Recording patterns from files, press r to reject"
 
         for new_frame in self.pictures:
@@ -298,7 +298,16 @@ class cameraCalibration:
                 cv2.drawChessboardCorners(new_frame,
                                           self.pattern_size,
                                           corners, found)
-                cv2.imshow("patternDetection", new_frame)
+                                          
+                # Resize
+                if (new_frame.shape[1]>800):
+                    new_size = (int(new_frame.shape[0]/float(new_frame.shape[1])*600), 800)
+                                          
+                else:
+                    new_size = new_frame.shape
+                    
+                resized_pict = cv2.resize(new_frame,(new_size[0],new_size[1]))
+                cv2.imshow("patternDetection", resized_pict)
                 key_choice = cv2.waitKey()
 
                 if (key_choice == 114):
@@ -555,16 +564,24 @@ class cameraCalibration:
         rms, self.intrinsics, self.distorsion, _rvecs, _tvecs = cv2.calibrateCamera(_obj_points, _img_points, self.frame_size, self.intrinsics, self.distorsion, rvecs, tvecs)
 
         print "Calibration done"
+        np.set_printoptions(precision=2)        
+        
+        
+        print "Residual RMS (pxl units) :\n"
+        print(rms)
 
-        print "Residual RMS (pxl units) : {}".format(rms)
+        print "\nRotations :\n"
+        print(rvecs)
 
-        print "\nRotations : {}".format(rvecs)
-
-        print "\nTranslations : {}".format(tvecs)
+        print "\nTranslations :\n"
+        print(tvecs)
 
         print "\nCalibration parameters :"
-        print "Intrinsics \n {}".format(self.intrinsics)
-        print "Distorsion \n {}".format(self.distorsion)
+        print "Intrinsics \n"
+        print(self.intrinsics)
+        
+        print "Distorsion \n"
+        print(self.distorsion)
 
         # Save calibration parameters
         save_file = utils.getAnswer("Would you like to save the results ? (y/n) ", 'yn')
