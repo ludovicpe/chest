@@ -301,12 +301,12 @@ class cameraCalibration:
                                           
                 # Resize
                 if (new_frame.shape[1]>800):
-                    new_size = (int(new_frame.shape[0]/float(new_frame.shape[1])*600), 800)
+                    new_size = (int(new_frame.shape[0]/float(new_frame.shape[1])*800), 800)
                                           
                 else:
                     new_size = new_frame.shape
                     
-                resized_pict = cv2.resize(new_frame,(new_size[0],new_size[1]))
+                resized_pict = cv2.resize(new_frame,(new_size[1],new_size[0]))
                 cv2.imshow("patternDetection", resized_pict)
                 key_choice = cv2.waitKey()
 
