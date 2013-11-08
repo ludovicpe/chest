@@ -3,7 +3,25 @@
 """
 Created on Wed Oct 31 14:26:31 2012
 
-@author: Benjamin Lefaudeux (benjamin.lefaudeux@inria.fr)
+@author: Benjamin Lefaudeux (blefaudeux at github)
+
+This script uses OpenCV to calibrate a camera, or a pair of cameras (intrinsic 
+and extrinsic parameters). You can use it by running "python camera_calibration.py"
+on the command line.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 
 import os       # File and folders navigation
