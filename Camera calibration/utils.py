@@ -24,8 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cv2
 import time
-import numpy as np
 import os
+import re
+
 
 # Import XML
 try:
@@ -34,8 +35,9 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 
+
+
 def getAnswer(question, possibilities):
-    # TODO : wrapper to simplify inputs
     answer = 'null'
     while (possibilities.find(answer) == -1):
         answer = raw_input(question)
@@ -44,26 +46,70 @@ def getAnswer(question, possibilities):
 
 # Handle paths and filenames.. return a correct pathway (hopefully)
 def handlePath(path, filename):
-    if (path[-1] != '/') :
-        # Test if its a directory
-        if (os.path.isdir(path)):
-            new_path = path + "/" + filename
+    if len(path) == 0:    
+        return filename
+    
+    else:
+        if (path[-1] != '/') :
+            # Test if its a directory
+            if (os.path.isdir(path)):
+                new_path = path + "/" + filename
+                return new_path
+    
+            # Test if its a filename
+            else :
+                if (os.path.isfile(path)):
+                    return path
+    
+        # It's just the beginning of a path, complete
+        else :
+            new_path = path + filename
             return new_path
 
-        # Test if its a filename
-        else :
-            if (os.path.isfile(path)):
-                return path
+def getCam():
+    # Test the cams connected to the system :
+    choice_done = False
+    n_cam = 0
 
-    # It's just the beginning of a path, complete
-    else :
-        new_path = path + filename
-        return new_path
+    while (not(choice_done)):
+        # start cam and show it :
+        print "Capturing camera {} \n".format(n_cam)
+        cam = cv2.VideoCapture(n_cam)
 
-def saveParameters(intrinsic, distorsion, rotation, translation, path):
+        if not cam:
+            print "No more camera on the system"
+            choice_done = True
+            cam = ''
+            break
+
+        success, new_frame = cam.read()
+
+        cv2.namedWindow("getCam", cv2.CV_WINDOW_AUTOSIZE)
+        cv2.imshow("getCam", new_frame)
+        cv2.waitKey(100)
+        cv2.destroyWindow("getCam")
+
+        answer = getAnswer("Is this the good camera ? (y/n)", 'yn')
+
+        if (answer == 'y'):
+            choice_done = True
+
+        else:
+            n_cam = n_cam + 1
+
+    return cam
+
+# http://stackoverflow.com/questions/2891790/pretty-printing-of-numpy-array
+def ndprint(a, format_string ='{0:.2f}'):
+    print [format_string.format(v,i) for i,v in enumerate(a)]
+
+def saveParameters(intrinsic, distorsion, rotation, translation, rms, path):
     FILE = open(path, "w")
 
     # Write parameters :
+    FILE.write("Calibration error (pixels) : \n")
+    FILE.write("{}\n\n".format(rms))
+
     FILE.write("Intrisic Matrix : \n")
     FILE.write("{}\n\n".format(intrinsic))
 
@@ -78,7 +124,6 @@ def saveParameters(intrinsic, distorsion, rotation, translation, path):
 
     # Close file
     FILE.close()
-
 
 def saveParametersXML(intrinsic_0,
                       distorsion_0,
@@ -181,35 +226,11 @@ def showCam(cam_number):
     time.sleep(2)
     print "Leaving showCam"
 
-def getCam():
-    # Test the cams connected to the system :
-    choice_done = False
-    n_cam = 0
+def sort_nicely(l ):
+      """ Sort the given list in the way that humans expect.
+      """
+      convert = lambda text: int(text) if text.isdigit() else text
+      alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
+      l.sort( key=alphanum_key )
+      return l
 
-    while (not(choice_done)):
-        # start cam and show it :
-        print "Capturing camera {} \n".format(n_cam)
-        cam = cv2.VideoCapture(n_cam)
-
-        if not cam:
-            print "No more camera on the system"
-            choice_done = True
-            cam = ''
-            break
-
-        success, new_frame = cam.read()
-
-        cv2.namedWindow("getCam", cv2.CV_WINDOW_AUTOSIZE)
-        cv2.imshow("getCam", new_frame)
-        cv2.waitKey(100)
-        cv2.destroyWindow("getCam")
-
-        answer = getAnswer("Is this the good camera ? (y/n)", 'yn')
-
-        if (answer == 'y'):
-            choice_done = True
-
-        else:
-            n_cam = n_cam + 1
-
-    return cam
