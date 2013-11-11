@@ -87,9 +87,12 @@ class batchCalibration:
                 
                 print "\nCalibrating using files in folder : {}".format(dir)                
                 
-                new_cam.calibrate()
-
-
+                if (os.path.exists(path +'/calib_results.txt')):
+                    print "Folder {} already contains calibration results"
+                else :
+                    new_cam.calibrate()
+                    
+                    
     def readFolders(self, path):
         # Get all the folders from this path
         pass 

@@ -357,6 +357,7 @@ class cameraCalibration:
                 
                 # Show and wait for key
                 cv2.imshow("patternDetection", resized_pict)
+                
                 if not(self.auto_validation):
                     key_choice = cv2.waitKey()
                 else:
@@ -645,7 +646,3 @@ class cameraCalibration:
             print "Saved calibration file"            
             
         return
-
-## Run script
-#run = cameraCalibration()
-#run.calibrate()
