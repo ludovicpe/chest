@@ -36,7 +36,8 @@ class cameraCalibration:
     # "Parameters" field can be used to change some settings
     # namely the automatic pattern validation and the visualisation
     # it should be a tuple of the form :
-    # [show-pictures, auto_validation, auto_max_pict_number, 'file_path', pattern_size(x,y), patch_dimensions(x,y)]
+    # [show-pictures, auto_validation, auto_max_pict_number, auto_save, 'file_path', 
+    #   pattern_size(x,y), patch_dimensions(x,y), mono]
     def __init__(self, parameters=None):
         self.obj_points     = []
         self.img_points     = []
@@ -65,39 +66,51 @@ class cameraCalibration:
         self.sq_size_h      = 0.0
         self.sq_size_v      = 0.0
 
-        self.stereo         = False
+        self.stereo         = None
         
         if (parameters is None):
             self.show_pictures      = True
             self.auto_validation    = False
+            self.auto_save          = False
             self.file_path          = ''
             self.pattern_size       = (0, 0)
             
         elif isinstance(parameters, tuple):
             self.show_pictures      = parameters[0]
             self.auto_validation    = parameters[1]
+            self.auto_save          = parameters[2]            
             
             if (parameters[2]):            
                 self.max_frames_i   = -1            
             
-            if ( len(parameters)>=4 and isinstance(parameters[3], basestring)):
-                self.file_path      = parameters[3]
+            if ( len(parameters)>=5 and isinstance(parameters[4], basestring)):
+                self.file_path      = parameters[4]
             else :
                 self.file_path          = ''
                 
-            if (len(parameters) >=5):
-                self.pattern_size = parameters[4]
-                
             if (len(parameters) >=6):
-                (self.sq_size_h, self.sq_size_v) = parameters[5]
+                self.pattern_size = parameters[5]
+                
+            if (len(parameters) >=7):
+                (self.sq_size_h, self.sq_size_v) = parameters[6]
+                
+            if (len(parameters) >=8):
+                self.stereo         = parameters[7]
                 
 
     def calibrate(self):
-        calib_type = utils.getAnswer('Stereo or Mono calibration ? (s/m) : ', 'sm')
-
-        if (calib_type == 's'):
+        # If calibration type is unkown at this point, ask the user
+        if (self.stereo == None):
+            calib_type = utils.getAnswer('Stereo or Mono calibration ? (s/m) : ', 'sm')
+            
+            if (calib_type == 's'):
+                self.stereo = True
+            else:
+                self.stereo = False
+            
+        # Start the appropriate calibration processes
+        if self.stereo:
             self.stereoCalibrate()
-
         else :
             self.monoCalibrate()
 
@@ -121,7 +134,7 @@ class cameraCalibration:
 
         for dirname, dirnames, filenames in os.walk(folder_path):
 
-            filenames = utils.sort_nicely(filenames)
+            filenames = utils.sortNicely(filenames)
 
             for filename in filenames:
                 print "Reading file {}".format(filename)
@@ -163,6 +176,8 @@ class cameraCalibration:
                 path = raw_input("Path for the calibration files : ")
                 file_read = self.readFiles(path)
                 
+            self.file_path = path
+            
         else :
             file_read = self.readFiles(self.file_path)
 
@@ -293,15 +308,18 @@ class cameraCalibration:
         pattern_points[:, 0] = pattern_points[:, 0] * self.sq_size_h
         pattern_points[:, 1] = pattern_points[:, 1] * self.sq_size_v
 
-        n_frames = 0
-        n_count = 0
-        b_left = False
+        n_frames    = 0
+        n_count     = 0
+        b_left      = False
         b_skip_next = False
-        b_reject = False
+        b_reject    = False
 
-        cv2.namedWindow("patternDetection") #CV_WINDOW_AUTOSIZE
+        cv2.namedWindow("patternDetection", cv2.CV_WINDOW_AUTOSIZE)
 
-        print "Recording patterns from files, press r to reject"
+        if not(self.auto_validation):
+            print "Recording patterns from files, press r to reject"
+        else :
+            print "Finding the patterns.."
 
         for new_frame in self.pictures:
             n_count = n_count + 1
@@ -339,7 +357,10 @@ class cameraCalibration:
                 
                 # Show and wait for key
                 cv2.imshow("patternDetection", resized_pict)
-                key_choice = cv2.waitKey()
+                if not(self.auto_validation):
+                    key_choice = cv2.waitKey()
+                else:
+                    key_choice = -1
 
                 if (key_choice == 114):
                     b_reject = True
@@ -406,7 +427,7 @@ class cameraCalibration:
               n_frames = n_frames - 1
               b_skip_next = False
 
-            if n_frames >= self.max_frames_i:
+            if (self.max_frames_i != -1) and (n_frames >= self.max_frames_i):
                 print "Enough grabbed frames"
                 break
 
@@ -581,41 +602,50 @@ class cameraCalibration:
         print(rms)
 
         print "\nRotations :\n"
-        utils.ndprint(rvecs)
+        print(rvecs)
 
         print "\nTranslations :\n"
-        utils.ndprint(tvecs)
+        print(tvecs)
 
         print "\nCalibration parameters :"
         print "Intrinsics \n"
-        utils.ndprint(self.intrinsics)
+        print(self.intrinsics)
         
         print "Distorsion \n"
-        utils.ndprint(self.distorsion)
+        print(self.distorsion)
 
         # Save calibration parameters
-        save_file = utils.getAnswer("Would you like to save the results ? (y/n) ", 'yn')
+        if not(self.auto_save):    
+            save_file = utils.getAnswer("Would you like to save the results ? (y/n) ", 'yn')
+    
+            b_write_success = False
+    
+            if save_file == "y" :
+                while(b_write_success == False) :
+                    filepath = raw_input("Where do you want to save the file ? (enter file path) ")
+                    filepath = utils.handlePath(filepath, "calib_results.txt")
+    
+                    # Create a file object in "write" mode
+                    try :
+                        utils.saveParameters(self.intrinsics, self.distorsion,
+                                            rvecs, tvecs, rms, filepath)
+                        b_write_success = True
+    
+                    except :
+                        print "Wrong path, please correct"
+    
+                    time.sleep(2)
 
-        b_write_success = False
-
-        if save_file == "y" :
-            while(b_write_success == False) :
-                filepath = raw_input("Where do you want to save the file ? (enter file path) ")
-                filepath = utils.handlePath(filepath, "calib_results.txt")
-
-                # Create a file object in "write" mode
-                try :
-                    utils.saveParameters(self.intrinsics, self.distorsion,
-                                        rvecs, tvecs, rms, filepath)
-                    b_write_success = True
-
-                except :
-                    print "Wrong path, please correct"
-
-                time.sleep(2)
-
+        else:
+            calib_file_path = utils.handlePath(self.file_path, "calib_results.txt")
+            
+            utils.saveParameters(self.intrinsics, self.distorsion,
+                                            rvecs, tvecs, rms, calib_file_path) 
+            
+            print "Saved calibration file"            
+            
         return
 
-# Run script
-run = cameraCalibration()
-run.calibrate()
+## Run script
+#run = cameraCalibration()
+#run.calibrate()

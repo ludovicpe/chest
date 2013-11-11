@@ -24,28 +24,70 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
 
-import camera_calibration
+import camera_calibration as cam_calib
+import utils
+import os
 
 class batchCalibration:
     def __init__(self):
         self.root_path      = ''
         self.folder_list    = []
+        self.pattern_size   = (0,0) # Number of inner squares on each dimension
+        self.sq_size_h      = 0.0
+        self.sq_size_v      = 0.0
+    
+    def calibrate(self):
+        # Get the pattern parameters
+        h_dim = utils.getAnswer(
+        "Number of inner corners on the horizontal dimension ? ", '12345678910')
 
-        
-        pass
+        v_dim = utils.getAnswer(
+        "Number of inner corners on the vertical dimension ? ", '12345678910')
+
+        # Enter the number of squares over each dimensions
+        self.pattern_size = (int(h_dim), int(v_dim))
+        print "Chessboard dimensions : {} x {}"\
+            .format(self.pattern_size[0], self.pattern_size[1])
     
-    def calibrate():        
-        # Get the root folder
-        folder_read = False
-    
-        while not folder_read:
-            path = raw_input("Root path for the calibration files : ")
-            folder_read = self.readFolders(path)        
-    
+        get_square_size = False
+        while not(get_square_size):
+            sq_size = raw_input("Horizontal Size (in m) of the squares ? ")
+
+            try:
+                self.sq_size_h = float(sq_size)
+                get_square_size = True
+
+            except ValueError:
+                print "Cannot determine dimension"
+
+        get_square_size = False
+        while not(get_square_size):
+            sq_size = raw_input("Vertical Size (in m) of the squares ? ")
+
+            try:
+                self.sq_size_v = float(sq_size)
+                get_square_size = True
+
+            except ValueError:
+                print "Cannot determine dimension"    
+
+        # Get the root folder, Get all the subfolders, 
+        # do all the subsequent calibrations and record the results 
+        path = raw_input("Root path for the calibration folders : ")           
         
-        # Get all the subfolders
-        
-        # Do all the subsequent calibrations and record the results
+        for dirpath, dirnames, filenames in os.walk(path):
+
+            for dir in dirnames:
+                path = dirpath + dir
+                
+                settings = (False, True, True, True, path, self.pattern_size , 
+                            (self.sq_size_h,self.sq_size_v), False)                
+                
+                new_cam = cam_calib.cameraCalibration(settings)
+                
+                print "\nCalibrating using files in folder : {}".format(dir)                
+                
+                new_cam.calibrate()
 
 
     def readFolders(self, path):
@@ -53,7 +95,6 @@ class batchCalibration:
         pass 
     
 
-
 # Run this script
-run = batchCalibration()
-run.calibrate()
+new_run = batchCalibration()
+new_run.calibrate()

@@ -226,7 +226,7 @@ def showCam(cam_number):
     time.sleep(2)
     print "Leaving showCam"
 
-def sort_nicely(l ):
+def sortNicely(l ):
       """ Sort the given list in the way that humans expect.
       """
       convert = lambda text: int(text) if text.isdigit() else text
