@@ -77,21 +77,22 @@ class batchCalibration:
         
         for dirpath, dirnames, filenames in os.walk(path):
 
-            for dir in dirnames:
-                path = dirpath + dir
-                
-                settings = (False, True, True, True, path, self.pattern_size , 
-                            (self.sq_size_h,self.sq_size_v), False)                
-                
-                new_cam = cam_calib.cameraCalibration(settings)
-                
-                print "\nCalibrating using files in folder : {}".format(dir)                
-                
-                if (os.path.exists(path +'/calib_results.txt')):
-                    print "Folder {} already contains calibration results"
-                else :
-                    new_cam.calibrate()
+            for dir in dirnames :
+                if not dir[0] == '.':
+                    path = dirpath + dir
                     
+                    settings = (False, True, True, True, path, self.pattern_size , 
+                                (self.sq_size_h,self.sq_size_v), False)                
+                    
+                    new_cam = cam_calib.cameraCalibration(settings)
+                    
+                    print "\nCalibrating using files in folder : {}".format(dir)                
+                    
+                    if (os.path.exists(path +'/calib_results.txt')):
+                        print "Folder {} already contains calibration results"
+                    else :
+                        new_cam.calibrate()
+                        
                     
     def readFolders(self, path):
         # Get all the folders from this path

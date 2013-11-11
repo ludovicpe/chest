@@ -411,22 +411,23 @@ class cameraCalibration:
                     print "{} patterns found".format(n_frames)
                     
                 self.frame_size = (len(new_frame[0]), len(new_frame))
+                
+            elif (self.stereo):
+                if ((n_count % 2) == 1) :
+                    # Left pattern is missed, skip next pattern
+                    print "Left pattern missed, skipping next frame"
+                    b_skip_next = True
 
-            elif ((n_count % 2) == 1) :
-              # Left pattern is missed, skip next pattern
-              print "Left pattern missed, skipping next frame"
-              b_skip_next = True
+                elif b_skip_next:
+                    print "Right pattern skipped because left was missed"
+                    b_skip_next = False
 
-            elif b_skip_next:
-              print "Right pattern skipped because left was missed"
-              b_skip_next = False
-
-            else :
-              print "Right pattern is missed, removing previous frame"
-              self.img_points_l.pop()
-              self.obj_points_l.pop()
-              n_frames = n_frames - 1
-              b_skip_next = False
+                else:
+                    print "Right pattern is missed, removing previous frame"
+                    self.img_points_l.pop()
+                    self.obj_points_l.pop()
+                    n_frames = n_frames - 1
+                    b_skip_next = False
 
             if (self.max_frames_i != -1) and (n_frames >= self.max_frames_i):
                 print "Enough grabbed frames"
