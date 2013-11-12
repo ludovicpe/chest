@@ -2,7 +2,7 @@
 """
 Created on Thu Sep 12 21:54:19 2013
 
-@author: arnaud malvache, benjamin lefaudeux
+@author: benjamin lefaudeux
 """
 
 import cv2      # OpenCV
