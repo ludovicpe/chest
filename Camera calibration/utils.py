@@ -35,8 +35,6 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 
-
-
 def getAnswer(question, possibilities):
     answer = 'null'
     while (possibilities.find(answer) == -1):
