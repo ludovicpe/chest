@@ -5,26 +5,32 @@ Created on Thu Sep 12 21:54:19 2013
 @author: benjamin lefaudeux
 """
 
-import cv2      # OpenCV
+import cv2          # OpenCV
 import numpy as np  # Numpy, useful for any computation
-import os       # Get files in a folder,..
-import re       # Sort filenames
+import os           # Get files in a folder,..
 
 
-def sort_nicely(l ):
-  """ Sort the given list in the way that humans expect.
-  """
-  convert = lambda text: int(text) if text.isdigit() else text
-  alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ]
-  l.sort( key=alphanum_key )
-  return l
+# TODO: do a proper class with virtual methods and proper inheritance.. 
+# We can mask the access to files or camera this way..
+
+
+def getCamInput():
+    """
+    Wrap the webcam reading from OpenCV
+    """
+    cam = cv2.VideoCapture()
+
+    if not cam.isOpened():
+      cam.open(0) # We suppose that the first device is the webcam...
+    
+    return cam
 
 def getVideoFile(filename):
     """
     Just a wrapper to openCV file handle
     """
     capture = cv2.VideoCapture(filename)
-
+    
     return capture
 
 def getPictFiles(folder):
@@ -122,7 +128,6 @@ def run(n_max_frame):
 
     for i in range(min(n_max_frame, len(pict_list))):
         if (keep_going == True) :
-
             # Read one frame from either video or filelist
             if(use_video):
                 keep_going, frame = handle.read()
@@ -175,4 +180,4 @@ def run(n_max_frame):
     cv2.destroyAllWindows()
 
 # Bam !
-run(200)
+#run(200)
