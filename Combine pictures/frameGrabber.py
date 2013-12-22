@@ -7,13 +7,18 @@ Created on Sat Dec 21 12:07:45 2013
 import cv2
 import os
 import utils as ut
-
+import numpy as np
 
 """
   The overall frameGrabber class, from which all our sub-classes inherit
 """
-# TODO : use virtual methods instead
+# TODO : use virtual methods instead ?
 class frameGrabber:  
+  n_frame       = 0
+  n_max_frames  = 0
+  size_x        = 0
+  size_y        = 0  
+  
   def __init__(self):
     # The default constructor
     self.n_frames     = 0
@@ -21,7 +26,16 @@ class frameGrabber:
     self.size_x       = 0
     self.size_y       = 0  
     
-    return 'New empty framer grabber'
+    return 'New empty frame grabber'
+
+  def showPictInWindow(self, pict):
+    cv2.namedWindow("Show")
+    cv2.imshow("Show", pict)  
+
+    k = cv2.waitKey(33)
+    # Escape quits
+    if (k==27):
+        b_quit = False
   
 class videoFile(frameGrabber):
   # The constructor : get a handle on a video file
@@ -35,19 +49,55 @@ class videoFile(frameGrabber):
     if (self.keep_going):  
       self.keep_going, self.frame = self.capture.read()    
       self.n_frame = self.n_frame + 1  
-      return self.frame
+      return [True, self.frame]
   
     else :
-      return False
+      return [False, []]
+  
+  def show(self):
+    frameGrabber.showPictInWindow(self.frame)
   
 class webCam(frameGrabber):
-  pass
+  def __init__(self, device_id = 0):
+    self.n_frames = 0
+    self.cam = cv2.VideoCapture(device_id)
+    
+    if self.cam.isOpened():
+      self.cam.release()
+      
+    self.cam.open(device_id)
+    self.keep_going = True
+
+
+  def newFrame(self):
+    if self.keep_going :
+      self.keep_going,self.frame_last = self.cam.read()
+      return [True, self.frame_last]
+      
+    else:
+      self.cam.release()
+      return [False, []]      
+      
+  def show(self):
+    b_quit = False
+    
+    while not b_quit:
+      self.frame = self.newFrame()
+      frameGrabber.showPictInWindow(self, self.frame)
 
 class pictsFile(frameGrabber):
   # The constructor : get a list of all the frames, and the number of frames 
   def __init__(self, folder):
     [self.pict_list, self.n_max_frames] = self.getPictFiles(folder)    
     self.n_frames = 0    
+    
+  def newFrame(self):
+    if self.n_frames < (self.n_max_frames-1):
+      self.n_frames = self.n_frames + 1
+      return [True, self.pict_list[self.n_frames]]
+    
+    else : 
+      return [False, []]
     
   def getPictFiles(self, folder):
       """
