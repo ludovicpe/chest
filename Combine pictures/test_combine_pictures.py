@@ -6,8 +6,8 @@ Created on Thu Sep 12 21:54:19 2013
 """
 
 import cv2          # OpenCV
-import numpy as np  # Numpy, useful for any computation
-import frameGrabber
+import frameGrabber # Wrap the frame grabbing process
+import frameFusion  # Wrap the frame accumulation process
 
 def getUserChoice():
   """
@@ -52,47 +52,30 @@ def run(n_max_frame):
   while(keep_going):
     keep_going, frame = frame_source.newFrame()      
     
-    # Initialize the accumulated frame
-    if i==0:
-        frame_acc = np.float32(frame)
-        frame_acc_disp = np.float32(frame)
-        frame_eq = np.float32(frame)
-        cv2.equalizeHist(frame, frame_acc)
-        cv2.normalize(frame_acc, frame_acc_disp, 0., 1., cv2.NORM_MINMAX) # just for the display stuff
-        cv2.namedWindow('Raw frame', cv2.cv.CV_WINDOW_NORMAL)
-        cv2.namedWindow('Processed frame', cv2.cv.CV_WINDOW_NORMAL)
-
-    # Process frames :
+    if not keep_going:
+      print "Could not read frame"
+      break
+    
     else :
-        cv2.equalizeHist(frame, frame_eq)   # Kill black level before the accumulation
-        cv2.accumulate(frame, frame_acc) # Just add pixel values
-        cv2.normalize(np.power(frame_acc, gamma), frame_acc_disp, 0., 1., cv2.NORM_MINMAX)
-
-    # Show results
-    print "Showing frame {}".format(i)
-    cv2.imshow('Raw frame', frame)
-    cv2.resizeWindow('Raw frame', 800, 600)
-    cv2.waitKey(5)
-    cv2.imshow('Processed frame', frame_acc_disp)
-    cv2.resizeWindow('Processed frame', 800, 600)
-    cv2.waitKey(5)
-    i = i + 1
-
-    # Wait for key
-    while(1) :
-        k = cv2.waitKey(33)
-
-        # Escape quits
-        if (k==27):
-            keep_going = False
-            break
-
-        # Space continues
-        elif (k==32):
-            break
-
+      # Bring the picture down to 1 channel
+      frame_bw = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+      
+      # Initialize the accumulated frame
+      if i==0:
+        frame_accumulator = frameFusion.frameFusion(frame_bw, gamma, False)     
+          
+      # Process frames :
+      else :
+        frame_accumulator.pileUp(frame_bw)        
+        
+      # Show results
+      keep_going = frame_accumulator.show()
+      i = i + 1
+  
   print "Bybye.."
-  cv2.destroyAllWindows()
+  cv2.destroyWindow('Raw frame')
+  
+  frame_source.release()
 
 # Bam !
 run(200)

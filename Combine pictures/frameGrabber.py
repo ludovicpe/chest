@@ -3,16 +3,17 @@
 Created on Sat Dec 21 12:07:45 2013
 
 @author: benjamin lefaudeux
+
+Root and inherited classes to wrap different possible picture inputs,
+such as a series of files, a movie file, or a connected camera
 """
 import cv2
 import os
 import utils as ut
-import numpy as np
 
 """
   The overall frameGrabber class, from which all our sub-classes inherit
 """
-# TODO : use virtual methods instead ?
 class frameGrabber:  
   n_frame       = 0
   n_max_frames  = 0
@@ -29,14 +30,25 @@ class frameGrabber:
     return 'New empty frame grabber'
 
   def showPictInWindow(self, pict):
+    b_quit = False
+    
     cv2.namedWindow("Show")
     cv2.imshow("Show", pict)  
-
     k = cv2.waitKey(33)
     # Escape quits
     if (k==27):
-        b_quit = False
+        b_quit = True
+        cv2.destroyAllWindows()
+        
+    return b_quit
+    
+  def release(self):
+    pass
   
+  
+"""
+Inherited class : read a video file
+"""  
 class videoFile(frameGrabber):
   # The constructor : get a handle on a video file
   def __init__(self, filename):
@@ -57,6 +69,10 @@ class videoFile(frameGrabber):
   def show(self):
     frameGrabber.showPictInWindow(self.frame)
   
+  
+"""
+Inherited class : read from a connected cam
+"""  
 class webCam(frameGrabber):
   def __init__(self, device_id = 0):
     self.n_frames = 0
@@ -70,8 +86,9 @@ class webCam(frameGrabber):
 
 
   def newFrame(self):
+    self.keep_going,self.frame_last = self.cam.read()
+
     if self.keep_going :
-      self.keep_going,self.frame_last = self.cam.read()
       return [True, self.frame_last]
       
     else:
@@ -79,12 +96,27 @@ class webCam(frameGrabber):
       return [False, []]      
       
   def show(self):
-    b_quit = False
+    keep_going = True
     
-    while not b_quit:
-      self.frame = self.newFrame()
-      frameGrabber.showPictInWindow(self, self.frame)
-
+    while keep_going:
+      grab_success, self.frame = self.newFrame()
+      
+      if not grab_success:
+        return
+        
+      else :
+        b_quit = frameGrabber.showPictInWindow(self, self.frame)
+        keep_going = keep_going and not b_quit
+        
+  # Re-implement this method
+  # in this case we really want to release the connected cam
+  def release(self):
+    self.cam.release()
+      
+      
+"""
+Inherited class : read a sequence of pictures
+"""  
 class pictsFile(frameGrabber):
   # The constructor : get a list of all the frames, and the number of frames 
   def __init__(self, folder):
@@ -137,8 +169,3 @@ class pictsFile(frameGrabber):
                       print "Error loading file {}".format(filename)
   
       return picture_list, n_files
-
-
-
-  
-  
