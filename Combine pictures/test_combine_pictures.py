@@ -62,7 +62,7 @@ def run(n_max_frame):
       
       # Initialize the accumulated frame
       if i==0:
-        frame_accumulator = frameFusion.frameFusion(frame_bw, gamma, False)     
+        frame_accumulator = frameFusion.frameFusion(frame_bw, gamma, True)     
           
       # Process frames :
       else :
