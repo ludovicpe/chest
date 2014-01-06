@@ -69,7 +69,7 @@ class frameFusion:
     # FIXME: No motion compensation here... TODO    
     
     if (self.motion_comp):
-      self.compensateInterFrameMotion(new_frame)
+      new_frame = self.compensateInterFrameMotion(new_frame)
     
     cv2.accumulate(new_frame, self.frame_acc)  #  Just add pixel values
     cv2.normalize(np.power(self.frame_acc, self.gamma), self.frame_acc_disp, 0., 1., cv2.NORM_MINMAX)    
@@ -80,6 +80,116 @@ class frameFusion:
     return self.n_fused_frames
     
   def compensateInterFrameMotion(self, new_frame):    
+    
+    # Test different techniques to compensate motion :
+    # - shi & tomasi + KLT
+#    new_frame_comp = self.compensateShiTomasi(new_frame)
+
+    # - ORB + distance matching
+    new_frame_comp = self.compensateORB(new_frame)
+
+    # - SIFT + distance matching
+#    new_frame_comp = self.compensateSIFT(new_frame)
+
+    return new_frame_comp
+
+  def compensateSIFT(self, new_frame):
+    # Test with SIFT corners : 
+    MIN_MATCH_COUNT = 10
+    FLANN_INDEX_KDTREE = 0
+    
+    # Initiate SIFT detector
+    sift = cv2.SIFT()
+    
+    # find the keypoints and descriptors with SIFT
+    kp1, des1 = sift.detectAndCompute(self.frame_prev,None)
+    kp2, des2 = sift.detectAndCompute(new_frame,None)
+        
+    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+    search_params = dict(checks = 50)
+    
+    flann = cv2.FlannBasedMatcher(index_params, search_params)
+    
+    matches = flann.knnMatch(des1,des2,k=2)
+    
+    # store all the good matches as per Lowe's ratio test.
+    good = []
+    for m,n in matches:
+        if m.distance < 0.7*n.distance:
+            good.append(m)  
+    
+    # - bring the second picture in the current referential
+    if len(good)>MIN_MATCH_COUNT:
+      print "Enough matchs for compensation - %d/%d" % (len(good),MIN_MATCH_COUNT)
+      src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+      dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+  
+      M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+      matchesMask = mask.ravel().tolist()
+  
+      h,w = self.frame_prev.shape
+      pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
+      transform = cv2.perspectiveTransform(pts,M)
+    
+#        new_frame = cv2.polylines(new_frame,[np.int32(transform)],True,255,3, cv2.LINE_AA)
+    
+    else:
+        print "Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT)
+        matchesMask = None    
+        
+  def compensateORB(self, new_frame):
+    detector = cv2.FastFeatureDetector(16, True)
+    detector = cv2.GridAdaptedFeatureDetector(detector)
+    extractor = cv2.DescriptorExtractor_create('ORB')
+        
+    # Test with SIFT corners : 
+    MIN_MATCH_COUNT = 10
+    FLANN_INDEX_KDTREE = 0
+      
+    # find the keypoints and descriptors with ORB
+    kp1   = detector.detect(new_frame)
+    k1, des1  = extractor.compute(new_frame, kp1)
+
+    kp2   = detector.detect(self.frame_prev)
+    k2, des2  = extractor.compute(self.frame_prev, kp2)
+
+    # Match using FLANN ?
+#    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+#    search_params = dict(checks = 50)
+#    
+#    matcher_flann = cv2.FlannBasedMatcher(index_params, search_params)
+#    matches = matcher_flann.knnMatch(des1,des2,k=2)
+  
+    # Match using bruteforce  
+    matcher = cv2.DescriptorMatcher_create('BruteForce-Hamming')    
+    matches = matcher.match(des1, des2)
+    
+    # store all the good matches as per Lowe's ratio test.
+    dist = [m.distance for m in matches]
+
+    # threshold: half the mean
+    thres_dist = (sum(dist) / len(dist)) * 0.5
+
+    # keep only the reasonable matches
+    good_matches = [m for m in matches if m.distance < thres_dist]    
+      
+    # - bring the second picture in the current referential
+    if len(good_matches)>MIN_MATCH_COUNT:
+      print "Enough matchs for compensation - %d/%d" % (len(good_matches),MIN_MATCH_COUNT)
+      src_pts = np.float32([ k1[m.queryIdx].pt for m in good_matches ]).reshape(-1,1,2)
+      dst_pts = np.float32([ k2[m.trainIdx].pt for m in good_matches ]).reshape(-1,1,2)
+  
+      transform, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
+#      matchesMask = mask.ravel().tolist()
+      
+      new_frame_comp = cv2.warpPerspective(new_frame, transform, new_frame.shape)      
+      return new_frame_comp      
+    
+    else:
+        print "Not enough matches are found - %d/%d" % (len(good_matches),MIN_MATCH_COUNT)
+        return new_frame
+        
+  def compensateShiTomasi(self, new_frame):
     # Measure and compensate for inter-frame motion:
     # - get points on both frames
     # -- we use Shi & Tomasi here, to be adapted ?
@@ -89,19 +199,19 @@ class frameFusion:
     # - track points
     [self.corners_next, status, err] = cv2.calcOpticalFlowPyrLK(self.frame_prev, new_frame, self.corners)  
   
-    # - determine if a motion compensation is necessary  
-    # TODO 
-    # (RANSAC + Vote ?)
-  
     # - compute the transformation from the tracked pattern
     # -- estimate the rigid transform
-    transform = cv2.estimateRigidTransform(self.corners, self.corners_next, False)
+    transform, mask = cv2.findHomography(self.corners, self.corners_next, cv2.RANSAC,5.0)
       
-    # -- see if this transform explains most of the displacements (thresholded..)  
-    # TODO
-  
-    # - bring the second picture in the current referential
-    pass
+    # -- see if this transform explains most of the displacements (thresholded..) 
+    if len(mask[mask>0]) > len(mask/2.0):
+      print "Enough match for motion compensation"
+      new_frame_comp = cv2.warpPerspective(new_frame, transform, new_frame.shape)      
+      return new_frame_comp
+      
+    else :
+      print "Not finding enough matchs"
+      return new_frame
     
   def show(self):
     keep_going = False
