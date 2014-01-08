@@ -56,12 +56,13 @@ class VideoFile(FrameGrabber):
     self.n_frames   = 0
     self.capture    = cv2.VideoCapture(filename)
     self.keep_going = True
+    self.frame      = []
 
   # Get a new frame
-  def newFrame(self):
-    if (self.keep_going):
+  def new_frame(self):
+    if self.keep_going:
       self.keep_going, self.frame = self.capture.read()
-      self.n_frame = self.n_frame + 1
+      self.n_frame += 1
       return [True, self.frame]
 
     else :
@@ -86,7 +87,7 @@ class Webcam(FrameGrabber):
     self.keep_going = True
 
 
-  def newFrame(self):
+  def new_frame(self):
     self.keep_going,self.frame_last = self.cam.read()
 
     if self.keep_going :
@@ -100,7 +101,7 @@ class Webcam(FrameGrabber):
     keep_going = True
 
     while keep_going:
-      grab_success, self.frame = self.newFrame()
+      grab_success, self.frame = self.new_frame()
 
       if not grab_success:
         return
@@ -121,10 +122,10 @@ Inherited class : read a sequence of pictures
 class PictsFile(FrameGrabber):
   # The constructor : get a list of all the frames, and the number of frames
   def __init__(self, folder):
-    [self.pict_list, self.n_max_frames] = self.getPictFiles(folder)
+    [self.pict_list, self.n_max_frames] = self.get_pict_files(folder)
     self.n_frames = 0
 
-  def newFrame(self):
+  def new_frame(self):
     if self.n_frames < (self.n_max_frames-1):
       self.n_frames += 1
       return [True, self.pict_list[self.n_frames]]
@@ -132,7 +133,8 @@ class PictsFile(FrameGrabber):
     else :
       return [False, []]
 
-  def getPictFiles(self, folder):
+  @staticmethod
+  def get_pict_files(folder):
       """
       Get all the picture files in the folder
       """
@@ -160,11 +162,11 @@ class PictsFile(FrameGrabber):
 
                   try:
                       picture_list.append(cv2.imread(full_filepath, cv2.CV_LOAD_IMAGE_GRAYSCALE))
-                      if (picture_list[n_files] == None) :
+                      if picture_list[n_files] == None:
                           picture_list.pop()
                           print "Error loading file {}".format(filename)
                       else :
-                          n_files = n_files + 1
+                          n_files += 1
 
                   except:
                       print "Error loading file {}".format(filename)

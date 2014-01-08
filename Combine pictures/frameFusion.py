@@ -55,22 +55,30 @@ class FrameFusion:
 
       i = 0
       for x, y in corn_xy:
-        cv2.line(img,(int(x),int(y)), (int(corn_xy_next[i,0]), int(corn_xy_next[i,1])), [0,0,255])
+        cv2.line(img,(int(x),int(y)), (int(corn_xy_next[i,0]), int(corn_xy_next[i,1])), [0,0,255],20)
         i += 1
 
     except ValueError:
-      pass
+      print "Problem printing the motion vectors"
 
-  # Function to add a new picture to the current pile
   def pile_up(self, new_frame):
-    cv2.equalizeHist(new_frame, self.frame_eq) # Kill black level before the accumulation
+    """
+    Add a new frame to the current accumulation
 
+    @param new_frame:
+    @return:
+    """
+    # Kill black level before the accumulation
+    cv2.equalizeHist(new_frame, self.frame_eq)
+
+    # Do the accumulation with motion compensation
     if self.motion_comp:
       new_frame = self.compensate_interframe_motion(new_frame)
 
     cv2.accumulate(new_frame, self.frame_acc)  #  Just add pixel values
     cv2.normalize(np.power(self.frame_acc, self.gamma), self.frame_acc_disp, 0., 1., cv2.NORM_MINMAX)
 
+    # Update and return
     self.n_fused_frames += 1
     self.frame_prev     = new_frame
 
@@ -80,10 +88,10 @@ class FrameFusion:
 
     # Test different techniques to compensate motion :
     # - shi & tomasi + KLT
-#    new_frame_comp = self.compensate_shi_tomasi(new_frame)
+    new_frame_comp = self.compensate_shi_tomasi(new_frame)
 
     # - ORB + distance matching
-    new_frame_comp = self.compensate_ORB(new_frame)
+    # new_frame_comp = self.compensate_ORB(new_frame)
 
     # - SIFT + distance matching
 #    new_frame_comp = self.compensate_SIFT(new_frame)
@@ -139,8 +147,8 @@ class FrameFusion:
     extractor = cv2.DescriptorExtractor_create('ORB')
 
     # Test with SIFT corners :
-    MIN_MATCH_COUNT = 10
-    FLANN_INDEX_KDTREE = 0
+    _min_match_count = 10
+    _flann_index_kdtree = 0
 
     # find the keypoints and descriptors with ORB
     kp1   = detector.detect(new_frame)
@@ -150,7 +158,7 @@ class FrameFusion:
     k2, des2  = extractor.compute(self.frame_prev, kp2)
 
     # Match using FLANN ?
-#    index_params = dict(algorithm = FLANN_INDEX_KDTREE, trees = 5)
+#    index_params = dict(algorithm = _flann_index_kdtree, trees = 5)
 #    search_params = dict(checks = 50)
 #
 #    matcher_flann = cv2.FlannBasedMatcher(index_params, search_params)
@@ -170,8 +178,8 @@ class FrameFusion:
     good_matches = [m for m in matches if m.distance < thres_dist]
 
     # - bring the second picture in the current referential
-    if len(good_matches)>MIN_MATCH_COUNT:
-      print "Enough matchs for compensation - %d/%d" % (len(good_matches),MIN_MATCH_COUNT)
+    if len(good_matches)>_min_match_count:
+      print "Enough matchs for compensation - %d/%d" % (len(good_matches),_min_match_count)
       src_pts = np.float32([ k1[m.queryIdx].pt for m in good_matches ]).reshape(-1,1,2)
       dst_pts = np.float32([ k2[m.trainIdx].pt for m in good_matches ]).reshape(-1,1,2)
 
@@ -182,13 +190,16 @@ class FrameFusion:
       return new_frame_comp
 
     else:
-        print "Not enough matches are found - %d/%d" % (len(good_matches),MIN_MATCH_COUNT)
+        print "Not enough matches are found - %d/%d" % (len(good_matches),_min_match_count)
         return new_frame
 
   def compensate_shi_tomasi(self, new_frame):
-    # Measure and compensate for inter-frame motion:
-    # - get points on both frames
-    # -- we use Shi & Tomasi here, to be adapted ?
+    """
+    Measure and compensate for inter-frame motion:
+    - get points on both frames
+    -- we use Shi & Tomasi here, to be adapted ?
+    @rtype : opencv frame
+    """
     self.corners = cv2.goodFeaturesToTrack(self.frame_prev, 50, .01, 50)
 
     # - track points
@@ -196,7 +207,7 @@ class FrameFusion:
 
     # - compute the transformation from the tracked pattern
     # -- estimate the rigid transform
-    transform, mask = cv2.findHomography(self.corners, self.corners_next, cv2.RANSAC,5.0)
+    transform, mask = cv2.findHomography(self.corners, self.corners_next, cv2.RANSAC, 5.0)
 
     # -- see if this transform explains most of the displacements (thresholded..)
     if len(mask[mask>0]) > len(mask/2.0):
@@ -205,18 +216,21 @@ class FrameFusion:
       return new_frame_comp
 
     else :
-      print "Not finding enough matchs"
+      print "Not finding enough matchs - {}".format(len(mask[mask>0]))
       return new_frame
 
+  @property
   def show(self):
     keep_going = False
 
     # Show the current combined picture
     print "Showing frame {}".format(self.n_fused_frames)
 
+    # Do all the resizing beforehand
+    frame_fusion_resize = cv2.resize(self.frame_acc_disp, (800,600))
+
     cv2.namedWindow("FrameFusion")
-    cv2.imshow("FrameFusion", self.frame_acc_disp)
-    cv2.resizeWindow('FrameFusion', 800, 600)
+    cv2.imshow("FrameFusion", frame_fusion_resize)
     cv2.waitKey(5)
 
     # Show the initial picture
@@ -225,24 +239,28 @@ class FrameFusion:
     if self.motion_comp:
       self.draw_vec(self.frame_prev,self.corners, self.corners_next)
 
-    cv2.imshow('Raw frame', self.frame_prev)
-    cv2.resizeWindow('Raw frame', 800, 600)
+    frame_raw_resize = cv2.resize(self.frame_prev, (800,600))
+    cv2.imshow('Raw frame', frame_raw_resize)
     cv2.waitKey(5)
+    print "Press space key to continue, escape to quit"
 
     while 1:
-      # Escape quits
+      # Q quits
       k = cv2.waitKey(33)
 
-      if 27 == k:
+      if 27 == k or  1048603 == k:
           keep_going = False
           cv2.destroyWindow('FrameFusion')
           cv2.destroyWindow('Raw frame')
           break
 
       # Space continues
-      elif 32 == k:
+      elif 33 == k or 1048608 == k:
         keep_going = True
         break
+
+      elif k != -1:
+        print k
 
     return keep_going
 
