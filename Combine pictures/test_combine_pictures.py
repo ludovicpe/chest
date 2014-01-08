@@ -38,6 +38,7 @@ def run(n_max_frame):
   """
   The main part, parsing pict files or movie frames
   and combining them to enhance the pictures
+  @rtype : nothing
   @param n_max_frame:
   """
   # Parameters
@@ -51,7 +52,7 @@ def run(n_max_frame):
   i = 0
 
   while keep_going and i<n_max_frame:
-    keep_going, frame = frame_source.newFrame()
+    keep_going, frame = frame_source.new_frame()
 
     if not keep_going:
       print "Could not read frame"
@@ -59,7 +60,7 @@ def run(n_max_frame):
 
     else :
       # Bring the picture down to 1 channel
-      if len(frame.shape) == 3 and frame.shape[2]==3:
+      if 3 == len(frame.shape) and 3 == frame.shape[2]:
         frame_bw = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
       else :
         frame_bw = frame
@@ -73,11 +74,12 @@ def run(n_max_frame):
         frame_accumulator.pile_up(frame_bw)
 
       # Show results
-      keep_going = frame_accumulator.show()
+      keep_going = frame_accumulator.show
       i += 1
 
   print "Bybye.."
   cv2.destroyWindow('Raw frame')
+  return
 
   frame_source.release()
 
