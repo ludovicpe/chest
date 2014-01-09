@@ -9,72 +9,78 @@ import cv2          # OpenCV
 import frameGrabber # Wrap the frame grabbing process
 import frameFusion  # Wrap the frame accumulation process
 
-def getUserChoice():
+def get_user_choice():
   """
   Get the video/pict choice from user
   """
   choose_type = False
-  
-  while (not choose_type):
+
+  while not choose_type:
     choice = raw_input("Video file (V), Pictures (P) or Webcam (W)")
 
-    if ((choice == 'V') or (choice == 'v')):
+    if (choice == 'V') or (choice == 'v'):
       path = raw_input("File/folder path ? (keep empty for defaults)")
-      frame_source = frameGrabber.videoFile(path)
+      frame_source = frameGrabber.VideoFile(path)
       choose_type= True
 
-    elif ((choice == 'P') or (choice == 'p')):
+    elif (choice == 'P') or (choice == 'p'):
       path = raw_input("File/folder path ? (keep empty for defaults)")
-      frame_source = frameGrabber.pictsFile(path)
+      frame_source = frameGrabber.PictsFile(path)
       choose_type= True
-        
-    elif ((choice == 'W') or (choice == 'w')):
-      frame_source = frameGrabber.webCam()      
+
+    elif (choice == 'W') or (choice == 'w'):
+      frame_source = frameGrabber.Webcam()
       choose_type= True
-      
+
   return frame_source
 
 def run(n_max_frame):
   """
   The main part, parsing pict files or movie frames
   and combining them to enhance the pictures
+  @rtype : nothing
+  @param n_max_frame:
   """
   # Parameters
   gamma = 0.8 # The gamma curve parameter.. lower value lightens the picture
 
   # Get the inputs
-  frame_source = getUserChoice()
+  frame_source = get_user_choice()
 
   # Process the stream frame by frame
-  keep_going = True  
+  keep_going = True
   i = 0
-  
-  while(keep_going):
-    keep_going, frame = frame_source.newFrame()      
-    
+
+  while keep_going and i<n_max_frame:
+    keep_going, frame = frame_source.new_frame()
+
     if not keep_going:
       print "Could not read frame"
       break
-    
+
     else :
       # Bring the picture down to 1 channel
-      frame_bw = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-      
+      if 3 == len(frame.shape) and 3 == frame.shape[2]:
+        frame_bw = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+      else :
+        frame_bw = frame
+
       # Initialize the accumulated frame
       if i==0:
-        frame_accumulator = frameFusion.frameFusion(frame_bw, gamma, True)     
-          
+        frame_accumulator = frameFusion.FrameFusion(frame_bw, gamma, True)
+
       # Process frames :
       else :
-        frame_accumulator.pileUp(frame_bw)        
-        
+        frame_accumulator.pile_up(frame_bw)
+
       # Show results
-      keep_going = frame_accumulator.show()
-      i = i + 1
-  
+      keep_going = frame_accumulator.show
+      i += 1
+
   print "Bybye.."
   cv2.destroyWindow('Raw frame')
-  
+  return
+
   frame_source.release()
 
 # Bam !
