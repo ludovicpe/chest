@@ -39,26 +39,25 @@ def getAnswer(question, possibilities):
     answer = 'null'
     while (possibilities.find(answer) == -1):
         answer = raw_input(question)
-
     return answer
 
 # Handle paths and filenames.. return a correct pathway (hopefully)
 def handlePath(path, filename):
-    if len(path) == 0:    
+    if len(path) == 0:
         return filename
-    
+
     else:
         if (path[-1] != '/') :
             # Test if its a directory
             if (os.path.isdir(path)):
                 new_path = path + "/" + filename
                 return new_path
-    
+
             # Test if its a filename
             else :
                 if (os.path.isfile(path)):
                     return path
-    
+
         # It's just the beginning of a path, complete
         else :
             new_path = path + filename
