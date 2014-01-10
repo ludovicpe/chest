@@ -72,6 +72,7 @@ class FrameFusion:
         cv2.equalizeHist(new_frame, self.frame_eq)
 
         # Do the accumulation with motion compensation
+        # -- we offset the previous accumulation
         if self.motion_comp and self.n_fused_frames > 0:
             self.frame_acc = self.compensate_interframe_motion(new_frame)
 
@@ -192,7 +193,7 @@ class FrameFusion:
 
         else:
             print "Not enough matches are found - %d/%d" % (len(good_matches), _min_match_count)
-            return new_frame
+            return self.frame_acc
 
     def compensate_shi_tomasi(self, new_frame):
         """
