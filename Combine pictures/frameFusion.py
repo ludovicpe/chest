@@ -74,7 +74,12 @@ class FrameFusion:
         # Do the accumulation with motion compensation
         # -- we offset the previous accumulation
         if self.motion_comp and self.n_fused_frames > 0:
-            self.frame_acc = self.compensate_interframe_motion(new_frame)
+            b_success = self.compensate_interframe_motion(new_frame)
+
+            if b_success:
+                print "Frames aligned"
+            else:
+                print "Frames not aligned"
 
         cv2.accumulate(new_frame, self.frame_acc)  # Just add pixel values
         cv2.normalize(np.power(self.frame_acc, self.gamma), self.frame_acc_disp, 0., 1., cv2.NORM_MINMAX)
@@ -88,15 +93,15 @@ class FrameFusion:
     def compensate_interframe_motion(self, new_frame):
         # Test different techniques to compensate motion :
         # - shi & tomasi + KLT
-        # acc_frame_aligned = self.compensate_shi_tomasi(new_frame)
+        success = self.compensate_shi_tomasi(new_frame)
 
         # - ORB + distance matching
-        acc_frame_aligned = self.compensate_orb(new_frame)
+        # success = self.compensate_orb(new_frame)
 
         # - SIFT + distance matching
         #    acc_frame_aligned = self.compensate_SIFT(new_frame)
 
-        return acc_frame_aligned
+        return success
 
     def compensate_sift(self, new_frame):
         # Test with SIFT corners :
@@ -183,17 +188,19 @@ class FrameFusion:
             # Align the previous accumulated frame
             acc_frame_aligned = cv2.warpPerspective(self.frame_acc, transform, self.frame_acc.shape[2::-1])
 
+            self.frame_acc = acc_frame_aligned
+
             # DEBUG
             cv2.imshow('Aligned Frame', acc_frame_aligned)
             cv2.waitKey()
             cv2.destroyWindow('Aligned Frame')
             # DEBUG
 
-            return acc_frame_aligned
+            return True
 
         else:
             print "Not enough matches are found - %d/%d" % (len(good_matches), _min_match_count)
-            return self.frame_acc
+            return False
 
     def compensate_shi_tomasi(self, new_frame):
         """
@@ -215,11 +222,12 @@ class FrameFusion:
         if len(mask[mask>0]) > len(mask/2.0):
             print "Enough match for motion compensation"
             acc_frame_aligned = cv2.warpPerspective(self.frame_acc, transform, self.frame_acc.shape[2::-1])
-            return acc_frame_aligned
+            self.frame_acc = acc_frame_aligned
+            return True
 
         else:
             print "Not finding enough matchs - {}".format(len(mask[mask>0]))
-            return new_frame
+            return False
 
     @property
     def show(self):
