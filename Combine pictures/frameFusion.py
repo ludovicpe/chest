@@ -36,6 +36,7 @@ class FrameFusion:
         self.n_max_corners  = 400
         self.corners_q_level= 4
         self.motion_comp    = motion_compensation
+        self.reset          = False
 
         # Allocate buffers
         self.frame_acc      = np.float32(frame_first)
@@ -69,6 +70,7 @@ class FrameFusion:
         @param new_frame:
         @return: number of frames in the current pile
         """
+
         # Kill black level before the accumulation
         cv2.equalizeHist(new_frame, self.frame_eq)
 
@@ -82,6 +84,12 @@ class FrameFusion:
             else:
                 print "Frames not aligned"
 
+        # Handle a reset of the accumulation (TODO : Make it automatic if the scene changes a lot)
+        if self.reset:
+            self.frame_acc = np.float32(new_frame)
+            self.reset = False
+
+        # Pile up
         cv2.accumulate(new_frame, self.frame_acc)  # Just add pixel values
         cv2.normalize(np.power(self.frame_acc, self.gamma), self.frame_acc_disp, 0., 1., cv2.NORM_MINMAX)
 
@@ -238,10 +246,10 @@ class FrameFusion:
         print "Showing frame {}".format(self.n_fused_frames)
 
         # Do all the resizing beforehand
-        frame_fusion_resize = cv2.resize(self.frame_acc_disp, (800,600))
+        frame_fusion_resize = cv2.resize(self.frame_acc_disp, (800, 600))
 
         # Onscreen print
-        cv2.putText(frame_fusion_resize, "Space continues, Esc leaves",
+        cv2.putText(frame_fusion_resize, "Space continues, Esc leaves, r resets",
                     (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, 255)
 
         cv2.namedWindow("FrameFusion")
@@ -266,7 +274,7 @@ class FrameFusion:
 
             current_time = time.time()
 
-            if 27 == k or  1048603 == k:
+            if 27 == k or 1048603 == k:
                 keep_going = False
                 cv2.destroyWindow('FrameFusion')
                 cv2.destroyWindow('Raw frame')
@@ -275,6 +283,12 @@ class FrameFusion:
             # Space continues
             elif 32 == k or 1048608 == k:
                 keep_going = True
+                break
+
+            elif ord('r') == k:
+                keep_going = True
+                self.reset = True
+                print "Reset the accumulation"
                 break
 
             # Timer went through, time to leave
