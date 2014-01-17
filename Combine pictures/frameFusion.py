@@ -57,7 +57,7 @@ class FrameFusion:
 
             i = 0
             for x, y in corn_xy:
-                cv2.line(img, (int(x), int(y)), (int(corn_xy_next[i,0]), int(corn_xy_next[i,1])), [0,0,255],10)
+                cv2.line(img, (int(x), int(y)), (int(corn_xy_next[i, 0]), int(corn_xy_next[i, 1])), [0, 0, 255], 5)
                 i += 1
 
         except ValueError:
@@ -196,15 +196,7 @@ class FrameFusion:
 
             # Align the previous accumulated frame
             acc_frame_aligned = cv2.warpPerspective(self.frame_acc, transform, self.frame_acc.shape[2::-1])
-
             self.frame_acc = acc_frame_aligned
-
-            # DEBUG
-            cv2.imshow('Aligned Frame', acc_frame_aligned)
-            cv2.waitKey()
-            cv2.destroyWindow('Aligned Frame')
-            # DEBUG
-
             return True
 
         else:
@@ -269,11 +261,11 @@ class FrameFusion:
         start_time = time.time()
 
         while 1:
-            # Q quits
             k = cv2.waitKey(33)
 
             current_time = time.time()
 
+            # Escape quits
             if 27 == k or 1048603 == k:
                 keep_going = False
                 cv2.destroyWindow('FrameFusion')
@@ -285,6 +277,7 @@ class FrameFusion:
                 keep_going = True
                 break
 
+            # R resets the accumulation
             elif ord('r') == k:
                 keep_going = True
                 self.reset = True
@@ -292,7 +285,7 @@ class FrameFusion:
                 break
 
             # Timer went through, time to leave
-            elif (current_time - start_time) > 10:
+            elif (current_time - start_time) > 3:
                 keep_going = True
                 print "Waited enough, next frame !"
                 break
