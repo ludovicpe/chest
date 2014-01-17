@@ -45,7 +45,7 @@ class FrameFusion:
 
         # Do the first accumulation
         cv2.equalizeHist(frame_first, self.frame_acc)
-        cv2.normalize(self.frame_acc, self.frame_acc_disp, 0., 1., cv2.NORM_MINMAX) # just for the display stuf
+        cv2.normalize(self.frame_acc, self.frame_acc_disp, 0., 1., cv2.NORM_MINMAX)  # just for the display stuf
 
     # Display lines representing tracks
     @staticmethod
@@ -56,7 +56,7 @@ class FrameFusion:
 
             i = 0
             for x, y in corn_xy:
-                cv2.line(img,(int(x),int(y)), (int(corn_xy_next[i,0]), int(corn_xy_next[i,1])), [0,0,255],20)
+                cv2.line(img, (int(x), int(y)), (int(corn_xy_next[i,0]), int(corn_xy_next[i,1])), [0,0,255],10)
                 i += 1
 
         except ValueError:
@@ -236,10 +236,13 @@ class FrameFusion:
 
         # Show the current combined picture
         print "Showing frame {}".format(self.n_fused_frames)
-        print "Space key continues, Esc key leaves"
 
         # Do all the resizing beforehand
         frame_fusion_resize = cv2.resize(self.frame_acc_disp, (800,600))
+
+        # Onscreen print
+        cv2.putText(frame_fusion_resize, "Space continues, Esc leaves",
+                    (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, 255)
 
         cv2.namedWindow("FrameFusion")
         cv2.imshow("FrameFusion", frame_fusion_resize)
