@@ -9,6 +9,7 @@ Class to combine different pictures on top of one another.
 
 import cv2
 import numpy as np
+import time
 
 class FrameFusion:
     n_fused_frames  = 0
@@ -235,6 +236,7 @@ class FrameFusion:
 
         # Show the current combined picture
         print "Showing frame {}".format(self.n_fused_frames)
+        print "Space key continues, Esc key leaves"
 
         # Do all the resizing beforehand
         frame_fusion_resize = cv2.resize(self.frame_acc_disp, (800,600))
@@ -252,11 +254,14 @@ class FrameFusion:
         frame_raw_resize = cv2.resize(self.frame_prev, (800,600))
         cv2.imshow('Raw frame', frame_raw_resize)
         cv2.waitKey(5)
-        print "Press space key to continue, escape to quit"
+
+        start_time = time.time()
 
         while 1:
             # Q quits
             k = cv2.waitKey(33)
+
+            current_time = time.time()
 
             if 27 == k or  1048603 == k:
                 keep_going = False
@@ -267,6 +272,12 @@ class FrameFusion:
             # Space continues
             elif 32 == k or 1048608 == k:
                 keep_going = True
+                break
+
+            # Timer went through, time to leave
+            elif (current_time - start_time) > 10:
+                keep_going = True
+                print "Waited enough, next frame !"
                 break
 
             elif k != -1:
