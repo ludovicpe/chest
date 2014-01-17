@@ -192,7 +192,7 @@ class FrameFusion:
         extractor = cv2.DescriptorExtractor_create('ORB')
 
         # Test with SIFT corners :
-        _min_match_count = 10
+        _min_match_count = 20
 
         # find the keypoints and descriptors with ORB
         kp1 = detector.detect(new_frame)
