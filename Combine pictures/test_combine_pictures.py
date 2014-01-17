@@ -59,11 +59,11 @@ def run(n_max_frame):
             print "Could not read frame"
             break
 
-        else :
-            # Bring the picture down to 1 channel
+        else:
+            # Bring the picture down to 1 channel if in color
             if 3 == len(frame.shape) and 3 == frame.shape[2]:
                 frame_bw = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
-            else :
+            else:
                 frame_bw = frame
 
             # Initialize the accumulated frame
@@ -71,7 +71,7 @@ def run(n_max_frame):
                 frame_accumulator = frameFusion.FrameFusion(frame_bw, gamma, True)
 
             # Process frames :
-            else :
+            else:
                 frame_accumulator.pile_up(frame_bw)
 
             # Show results
@@ -84,5 +84,5 @@ def run(n_max_frame):
 
     frame_source.release()
 
-# Bam !
+# Bam ! Run this stuff
 run(200)
