@@ -316,7 +316,7 @@ class FrameFusion:
                 break
 
             # Timer went through, time to leave
-            elif (current_time - start_time) > 3:
+            elif (current_time - start_time) > 1:
                 keep_going = True
                 print "Waited enough, next frame !"
                 break
