@@ -56,27 +56,34 @@ class FrameFusion:
         cv2.equalizeHist(frame_first, self.frame_acc)
         cv2.normalize(self.frame_acc, self.frame_acc_disp, 0., 1., cv2.NORM_MINMAX)  # just for the display stuf
 
-    # Display lines representing tracks
-    @staticmethod
-    def draw_vec(img, corners, corners_next):
+    def compensate_interframe_motion(self, new_frame, technique='shi_tomasi'):
         """
-        Draw motion vectors on the picture
+        Compensate the motion between two observations
 
-        @param img: picture to draw onto
-        @param corners: initial keypoints position
-        @param corners_next: position after tracking
+        @param new_frame: the new observation
+        @param technique: the technique to be used (we're trying several of them..)
+        @return:
+        - the self.frame_acc is offset to its new referential
+        - return boolean describing the success of the operation
         """
-        try:
-            corn_xy = corners.reshape((-1, 2))
-            corn_xy_next = corners_next.reshape((-1, 2))
+        if technique == 'shi_tomasi':
+            # - shi & tomasi + KLT
+            success = self.__compensate_shi_tomasi(new_frame)
 
-            i = 0
-            for x, y in corn_xy:
-                cv2.line(img, (int(x), int(y)), (int(corn_xy_next[i, 0]), int(corn_xy_next[i, 1])), [0, 0, 255], 5)
-                i += 1
+        elif technique == 'orb':
+            # - ORB + distance matching
+            success = self.__compensate_orb(new_frame)
 
-        except ValueError:
-            print "Problem printing the motion vectors"
+        elif technique == 'sift':
+            # - SIFT + distance matching
+            #    acc_frame_aligned = self.__compensate_SIFT(new_frame)
+            print "Cannot use SIFT right now..."
+            pass
+
+        else:
+            ValueError('Wrong argument for motion compensation')
+
+        return success
 
     def pile_up(self, new_frame):
         """
@@ -114,36 +121,7 @@ class FrameFusion:
 
         return self.n_fused_frames
 
-    def compensate_interframe_motion(self, new_frame, technique='shi_tomasi'):
-        """
-        Compensate the motion between two observations
-
-        @param new_frame: the new observation
-        @param technique: the technique to be used (we're trying several of them..)
-        @return:
-        - the self.frame_acc is offset to its new referential
-        - return boolean describing the success of the operation
-        """
-        if technique == 'shi_tomasi':
-            # - shi & tomasi + KLT
-            success = self.compensate_shi_tomasi(new_frame)
-
-        elif technique == 'orb':
-            # - ORB + distance matching
-            success = self.compensate_orb(new_frame)
-
-        elif technique == 'sift':
-            # - SIFT + distance matching
-            #    acc_frame_aligned = self.compensate_SIFT(new_frame)
-            print "Cannot use SIFT right now..."
-            pass
-
-        else:
-            ValueError('Wrong argument for motion compensation')
-
-        return success
-
-    def compensate_sift(self, new_frame):
+    def __compensate_sift(self, new_frame):
         # Test with SIFT corners :
         _min_match_count = 10
         _flann_index_kdtree = 0
@@ -186,12 +164,12 @@ class FrameFusion:
             print "Not enough matches are found - %d/%d" % (len(good), _min_match_count)
             matchesMask = None
 
-    def compensate_orb(self, new_frame):
+    def __compensate_orb(self, new_frame):
         detector = cv2.FastFeatureDetector(16, True)
         detector = cv2.GridAdaptedFeatureDetector(detector)
         extractor = cv2.DescriptorExtractor_create('ORB')
 
-        # Test with SIFT corners :
+        # Test with ORB corners :
         _min_match_count = 20
 
         # find the keypoints and descriptors with ORB
@@ -234,24 +212,33 @@ class FrameFusion:
             print "Not enough matches are found - %d/%d" % (len(good_matches), _min_match_count)
             return False
 
-    def compensate_shi_tomasi(self, new_frame):
+    def __compensate_shi_tomasi(self, new_frame):
         """
         Measure and compensate for inter-frame motion:
         - get points on both frames
         -- we use Shi & Tomasi here, to be adapted ?
         @rtype : opencv frame
         """
-        self.corners = cv2.goodFeaturesToTrack(self.frame_prev, 50, .01, 50)
+        self.corners = cv2.goodFeaturesToTrack(self.frame_prev, self.n_max_corners, .01, 50)
 
         # - track points
         [self.corners_next, status, err] = cv2.calcOpticalFlowPyrLK(self.frame_prev, new_frame, self.corners)
+
+        # - track back (more reliable)
+        [corners_next_back, status_back, err_back] = cv2.calcOpticalFlowPyrLK(new_frame,
+                                                                              self.frame_prev, self.corners_next)
+
+        # - sort out to keep reliable points :
+        [self.corners, self.corners_next] = self.__sort_corners(self.corners,
+                                                                self.corners_next, status,
+                                                                corners_next_back, status_back)
 
         # - compute the transformation from the tracked pattern
         # -- estimate the rigid transform
         transform, mask = cv2.findHomography(self.corners_next, self.corners, cv2.RANSAC, 5.0)
 
         # -- see if this transform explains most of the displacements (thresholded..)
-        if len(mask[mask > 0]) > len(mask / 2.0):
+        if len(mask[mask > 0]) > 20: # TODO: More robust test here
             print "Enough match for motion compensation"
             acc_frame_aligned = cv2.warpPerspective(self.frame_acc, transform, self.frame_acc.shape[2::-1])
             self.frame_acc = acc_frame_aligned
@@ -260,6 +247,45 @@ class FrameFusion:
         else:
             print "Not finding enough matchs - {}".format(len(mask[mask > 0]))
             return False
+
+    @staticmethod
+    def __draw_vec(img, corners, corners_next):
+        """
+        Draw motion vectors on the picture
+
+        @param img: picture to draw onto
+        @param corners: initial keypoints position
+        @param corners_next: position after tracking
+        """
+        try:
+            corn_xy = corners.reshape((-1, 2))
+            corn_xy_next = corners_next.reshape((-1, 2))
+
+            i = 0
+            for x, y in corn_xy:
+                cv2.line(img, (int(x), int(y)), (int(corn_xy_next[i, 0]), int(corn_xy_next[i, 1])), [0, 0, 255], 5)
+                i += 1
+
+        except ValueError:
+            print "Problem printing the motion vectors"
+
+    @staticmethod
+    def __sort_corners(corners_init, corners_tracked, status_tracked,
+                       corners_tracked_back, status_tracked_back, max_dist=0.5):
+
+        # Check that the status value is 1, and that
+        i = 0
+        nice_points = []
+        for c1 in corners_init:
+            c2 = corners_tracked_back[i]
+            dist = cv2.norm(c1, c2)
+
+            if status_tracked[i] and status_tracked_back[i] and dist < max_dist:
+                nice_points.append(i)
+
+            i += 1
+
+        return [corners_init[nice_points], corners_tracked[nice_points]]
 
     @property
     def show(self):
@@ -283,7 +309,7 @@ class FrameFusion:
         cv2.namedWindow('Raw frame')
         # - Show tracked features
         if self.motion_comp:
-            self.draw_vec(self.frame_prev, self.corners, self.corners_next)
+            self.__draw_vec(self.frame_prev, self.corners, self.corners_next)
 
         frame_raw_resize = cv2.resize(self.frame_prev, (800, 600))
         cv2.imshow('Raw frame', frame_raw_resize)
@@ -325,4 +351,5 @@ class FrameFusion:
                 print k
 
         return keep_going
+
 
