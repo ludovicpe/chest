@@ -335,7 +335,7 @@ class FrameFusion:
                 break
 
             # R resets the accumulation
-            elif ord('r') == k:
+            elif ord('r') == k or 1048690 == k:
                 keep_going = True
                 self.reset = True
                 print "Reset the accumulation"
