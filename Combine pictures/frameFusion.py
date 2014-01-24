@@ -51,6 +51,7 @@ class FrameFusion:
         self.frame_acc_disp = np.float32(frame_first)
         self.frame_eq = np.float32(frame_first)
         self.frame_prev = frame_first
+        self.motion_compensation_method = 'shi_tomasi'
 
         # Do the first accumulation
         cv2.equalizeHist(frame_first, self.frame_acc)
@@ -69,10 +70,12 @@ class FrameFusion:
         if technique == 'shi_tomasi':
             # - shi & tomasi + KLT
             success = self.__compensate_shi_tomasi(new_frame)
+            self.motion_compensation_method = technique
 
         elif technique == 'orb':
             # - ORB + distance matching
             success = self.__compensate_orb(new_frame)
+            self.motion_compensation_method = technique
 
         elif technique == 'sift':
             # - SIFT + distance matching
@@ -89,6 +92,7 @@ class FrameFusion:
         """
         Add a new frame to the current accumulation
 
+        @rtype: integer, number of frames
         @param new_frame:
         @return: number of frames in the current pile
         """
@@ -99,7 +103,7 @@ class FrameFusion:
         # Do the accumulation with motion compensation
         # -- we offset the previous accumulation
         if self.motion_comp and self.n_fused_frames > 0:
-            b_success = self.compensate_interframe_motion(new_frame, 'shi_tomasi')
+            b_success = self.compensate_interframe_motion(new_frame, 'orb')
 
             if b_success:
                 print "Frames aligned"
@@ -121,52 +125,18 @@ class FrameFusion:
 
         return self.n_fused_frames
 
-    def __compensate_sift(self, new_frame):
-        # Test with SIFT corners :
-        _min_match_count = 10
-        _flann_index_kdtree = 0
-
-        # Initiate SIFT detector
-        sift = cv2.SIFT()
-
-        # find the keypoints and descriptors with SIFT
-        kp1, des1 = sift.detectAndCompute(self.frame_prev, None)
-        kp2, des2 = sift.detectAndCompute(new_frame, None)
-
-        index_params = dict(algorithm=_flann_index_kdtree, trees=5)
-        search_params = dict(checks=50)
-
-        flann = cv2.FlannBasedMatcher(index_params, search_params)
-
-        matches = flann.knnMatch(des1, des2, k=2)
-
-        # store all the good matches as per Lowe's ratio test.
-        good = []
-        for m, n in matches:
-            if m.distance < 0.7 * n.distance:
-                good.append(m)
-
-        # - bring the second picture in the current referential
-        if len(good) > _min_match_count:
-            print "Enough matches for compensation - %d/%d" % (len(good), _min_match_count)
-            src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
-            dst_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
-
-            M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
-            matchesMask = mask.ravel().tolist()
-
-            h, w = self.frame_prev.shape
-            pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
-            transform = cv2.perspectiveTransform(pts, M)
-            #        new_frame = cv2.polylines(new_frame,[np.int32(transform)],True,255,3, cv2.LINE_AA)
-
-        else:
-            print "Not enough matches are found - %d/%d" % (len(good), _min_match_count)
-            matchesMask = None
-
     def __compensate_orb(self, new_frame):
+        """
+        Compensate the motion between existing accumulation and the new frame
+
+        @rtype : boolean
+        @param new_frame: (numpy array) OpenCV frame
+        @return: compensation success
+        """
+
+        # Create an ORB detector
         detector = cv2.FastFeatureDetector(16, True)
-        detector = cv2.GridAdaptedFeatureDetector(detector)
+        # detector = cv2.GridAdaptedFeatureDetector(detector)
         extractor = cv2.DescriptorExtractor_create('ORB')
 
         # Test with ORB corners :
@@ -248,6 +218,50 @@ class FrameFusion:
             print "Not finding enough matchs - {}".format(len(mask[mask > 0]))
             return False
 
+    def __compensate_sift(self, new_frame):
+        # Test with SIFT corners :
+        _min_match_count = 10
+        _flann_index_kdtree = 0
+
+        # Initiate SIFT detector
+        sift = cv2.SIFT()
+
+        # find the keypoints and descriptors with SIFT
+        kp1, des1 = sift.detectAndCompute(self.frame_prev, None)
+        kp2, des2 = sift.detectAndCompute(new_frame, None)
+
+        index_params = dict(algorithm=_flann_index_kdtree, trees=5)
+        search_params = dict(checks=50)
+
+        flann = cv2.FlannBasedMatcher(index_params, search_params)
+
+        matches = flann.knnMatch(des1, des2, k=2)
+
+        # store all the good matches as per Lowe's ratio test.
+        good = []
+        for m, n in matches:
+            if m.distance < 0.7 * n.distance:
+                good.append(m)
+
+        # - bring the second picture in the current referential
+        if len(good) > _min_match_count:
+            print "Enough matches for compensation - %d/%d" % (len(good), _min_match_count)
+            src_pts = np.float32([kp1[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
+            dst_pts = np.float32([kp2[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
+
+            M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
+            matchesMask = mask.ravel().tolist()
+
+            h, w = self.frame_prev.shape
+            pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
+            transform = cv2.perspectiveTransform(pts, M)
+            #        new_frame = cv2.polylines(new_frame,[np.int32(transform)],True,255,3, cv2.LINE_AA)
+
+        else:
+            print "Not enough matches are found - %d/%d" % (len(good), _min_match_count)
+            matchesMask = None
+
+
     @staticmethod
     def __draw_vec(img, corners, corners_next):
         """
@@ -298,7 +312,7 @@ class FrameFusion:
         frame_fusion_resize = cv2.resize(self.frame_acc_disp, (800, 600))
 
         # Onscreen print
-        cv2.putText(frame_fusion_resize, "Space continues, Esc leaves, r resets",
+        cv2.putText(frame_fusion_resize, "Space continues, Esc leaves \n R resets, M changes method",
                     (30, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, 255)
 
         cv2.namedWindow("FrameFusion")
@@ -339,6 +353,21 @@ class FrameFusion:
                 keep_going = True
                 self.reset = True
                 print "Reset the accumulation"
+                break
+
+            # M changes the compensation method
+            elif ord('m') == k:
+                keep_going = True
+
+                if self.motion_compensation_method == 'shi_tomasi':
+                    self.motion_compensation_method = 'orb'
+                    self.reset = True
+
+                else:
+                    self.motion_compensation_method = 'shi_tomasi'
+                    self.reset = True
+
+                print "Change the motion compensation method"
                 break
 
             # Timer went through, time to leave

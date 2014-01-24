@@ -35,6 +35,7 @@ def get_user_choice():
 
     return frame_source
 
+
 def run(n_max_frame):
     """
     The main part, parsing pict files or movie frames
@@ -52,7 +53,7 @@ def run(n_max_frame):
     keep_going = True
     i = 0
 
-    while keep_going and i<n_max_frame:
+    while keep_going and i < n_max_frame:
         keep_going, frame = frame_source.new_frame()
 
         if not keep_going:
@@ -85,4 +86,4 @@ def run(n_max_frame):
     frame_source.release()
 
 # Bam ! Run this stuff
-run(200)
+run(500)
