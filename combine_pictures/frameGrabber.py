@@ -10,7 +10,9 @@ such as a series of files, a movie file, or a connected camera
 import cv2
 import os
 import utils as ut
+from time import sleep
 
+import picamera
 
 class FrameGrabber:
     """
@@ -197,3 +199,24 @@ class Webcam(FrameGrabber):
         self.cam.release()
 
 
+class PiCamera(FrameGrabber):
+    def _init__(self):
+        self.cam = picamera.PiCamera()
+
+        self.n_frames = 0
+        self.keep_going = True
+
+    def record(self, filename='movie.h264'):
+        self.cam.start_recording(filename)
+
+    def stop_recording(self):
+        self.cam.stop_recording()
+
+    def capture(self, filename='pict.jpg'):
+        self.cam.capture('image.jpg')
+
+    def show(self):
+        self.cam.start_preview()
+        self.cam.vflip = True
+        self.cam.hflip = True
+        self.cam.brightness = 60
