@@ -13,6 +13,8 @@ import utils as ut
 from time import sleep
 
 import picamera
+import numpy as np
+import io, time
 
 class FrameGrabber:
     """
@@ -112,7 +114,7 @@ class PictsFile(FrameGrabber):
             self.n_frames += 1
             return [True, self.pict_list[self.n_frames]]
 
-        else :
+        else:
             return [False, []]
 
     def show(self):
@@ -138,7 +140,7 @@ class VideoFile(FrameGrabber):
             self.n_frame += 1
             return [True, self.frame]
 
-        else :
+        else:
             return [False, []]
 
     def show(self):
@@ -200,20 +202,38 @@ class Webcam(FrameGrabber):
 
 
 class PiCamera(FrameGrabber):
-    def _init__(self):
+    def __init__(self):
         self.cam = picamera.PiCamera()
-
+        self.cam.resolution = (2592, 1944)
         self.n_frames = 0
         self.keep_going = True
-
-    def record(self, filename='movie.h264'):
-        self.cam.start_recording(filename)
-
-    def stop_recording(self):
-        self.cam.stop_recording()
+        self.ongoing_record = False
 
     def capture(self, filename='pict.jpg'):
-        self.cam.capture('image.jpg')
+        self.cam.capture(filename)
+
+    def new_frame(self):
+        stream = io.BytesIO()
+        self.cam.start_preview()
+        time.sleep(2)
+        self.cam.capture(stream, format='jpeg')
+
+        # Construct a numpy array from the stream
+        data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+
+        # "Decode" the image from the array, preserving colour
+        return [True, cv2.imdecode(data, 1)]
+
+
+    def record(self, filename='movie.h264'):
+        if not self.ongoing_record:
+            self.cam.start_recording(filename)
+            self.ongoing_record = True
+
+    def stop_recording(self):
+        if self.ongoing_record:
+            self.cam.stop_recording()
+            self.ongoing_record = False
 
     def show(self):
         self.cam.start_preview()

@@ -17,7 +17,7 @@ def get_user_choice():
     choose_type = False
 
     while not choose_type:
-        choice = raw_input("Video file (V), Pictures (P) or Webcam (W)")
+        choice = raw_input("Video file (V), Pictures (P), Webcam (W) or PiCamera (C)")
 
         if (choice == 'V') or (choice == 'v'):
             path = raw_input("File/folder path ? (keep empty for defaults)")
@@ -32,6 +32,10 @@ def get_user_choice():
         elif (choice == 'W') or (choice == 'w'):
             frame_source = frameGrabber.Webcam()
             choose_type= True
+
+        elif (choice == 'W') or (choice == 'w'):
+            frame_source = frameGrabber.PiCamera()
+            choose_type = True
 
     return frame_source
 
