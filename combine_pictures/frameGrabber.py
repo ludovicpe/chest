@@ -7,6 +7,8 @@ Created on Sat Dec 21 12:07:45 2013
 Root and inherited classes to wrap different possible picture inputs,
 such as a series of files, a movie file, or a connected camera
 """
+
+from __future__ import division
 import cv2
 import os
 import utils as ut
@@ -15,7 +17,7 @@ from time import sleep
 import picamera
 import numpy as np
 import io, time
-from __future__ import division
+
 
 class FrameGrabber:
     """
