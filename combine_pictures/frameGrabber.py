@@ -15,6 +15,7 @@ from time import sleep
 import picamera
 import numpy as np
 import io, time
+from __future__ import division
 
 class FrameGrabber:
     """
@@ -101,7 +102,7 @@ class PictsFile(FrameGrabber):
                         if picture_list[n_files] is None:
                             picture_list.pop()
                             print "Error loading file {}".format(filename)
-                        else :
+                        else:
                             n_files += 1
 
                     except:
@@ -204,7 +205,9 @@ class Webcam(FrameGrabber):
 class PiCamera(FrameGrabber):
     def __init__(self):
         self.cam = picamera.PiCamera()
-        self.cam.resolution = (2592, 1944)
+        self.width = 2592
+        self.height = 1944
+        self.cam.resolution = (self.width, self.height)
         self.n_frames = 0
         self.keep_going = True
         self.ongoing_record = False
@@ -213,19 +216,27 @@ class PiCamera(FrameGrabber):
         self.cam.capture(filename)
 
     def new_frame(self):
-        stream = io.BytesIO()
+        stream = open('image.data', 'wb')  # FIFO to store the picture
+
         self.cam.start_preview()
         time.sleep(2)
-        self.cam.capture(stream, format='jpeg')
+        self.cam.capture(stream, format='rgb')
+
+        stream.seek(0)  # Rewind the FIFO
 
         # Construct a numpy array from the stream
-        data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+        fwidth = (self.width + 31) // 32 * 32
+        fheight = (self.height + 15) // 16 * 16
+        image = np.fromfile(stream, dtype=uint8).\
+            reshape((fheight, fwidth, 3))[:height, :width, :]
 
-        # "Decode" the image from the array, preserving colour
-        return [True, cv2.imdecode(data, 1)]
+        # Transform the format into floats ?
+        # image = image.astype(np.float, copy=False)
+        # image = image / 255.0
 
+        return [True, image]
 
-    def record(self, filename='movie.h264'):
+    def record_movie(self, filename='movie.h264'):
         if not self.ongoing_record:
             self.cam.start_recording(filename)
             self.ongoing_record = True

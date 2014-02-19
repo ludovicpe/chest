@@ -88,6 +88,9 @@ class FrameFusion:
 
         return success
 
+    def get_fused_frame(self):
+        return self.frame_acc_disp
+
     def pile_up(self, new_frame):
         """
         Add a new frame to the current accumulation
