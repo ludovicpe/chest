@@ -207,10 +207,10 @@ class Webcam(FrameGrabber):
 class PiCamera(FrameGrabber):
     def __init__(self):
         # Declare the new interface with the cam,
-        # select the maximum definition by default
+        # select a small definition by default
         self.cam = picamera.PiCamera()
-        self.width = 2592
-        self.height = 1944
+        self.width = 2592 # 800
+        self.height = 1944 # 600
         self.cam.resolution = (self.width, self.height)
         self.n_frames = 0
         self.keep_going = True
@@ -224,7 +224,7 @@ class PiCamera(FrameGrabber):
         self.cam.capture(filename)
         self.cam.resolution = (self.width, self.height)
 
-    def new_frame(self):
+    def new_frame_raw(self):
         """
         Get a new frame from the cam. We use the RAW interface here
         returns an OpenCV object
@@ -249,13 +249,14 @@ class PiCamera(FrameGrabber):
 
         return [True, image]
 
-    def new_frame_jpg(self):
+    def new_frame(self):
         """
         Get a new frame from the cam. We use the jpg interface here, which compresses
          the pictures on the fly (could be better for fast recordings)
         """
 
         # Create the in-memory stream
+	# TODO: move it to the constructor, do it once only
         stream = io.BytesIO()
 
         # Start the capture
@@ -265,6 +266,7 @@ class PiCamera(FrameGrabber):
 
         # Construct a numpy array from the stream
         data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+
         # "Decode" the image from the array, preserving colour
         image = cv2.imdecode(data, 1)
 
