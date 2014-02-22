@@ -9,10 +9,11 @@ import cv2          # OpenCV
 import frameGrabber # Wrap the frame grabbing process
 import frameFusion  # Wrap the frame accumulation process
 
+
 def run(n_max_frame):
     """
-    The main part, parsing pict files or movie frames
-    and combining them to enhance the pictures
+    The main part, get frames from the pi camera
+    and combine them to enhance the pictures
     @rtype : nothing
     @param n_max_frame:
     """

@@ -206,6 +206,8 @@ class Webcam(FrameGrabber):
 
 class PiCamera(FrameGrabber):
     def __init__(self):
+        # Declare the new interface with the cam,
+        # select the maximum definition by default
         self.cam = picamera.PiCamera()
         self.width = 2592
         self.height = 1944
@@ -214,27 +216,57 @@ class PiCamera(FrameGrabber):
         self.keep_going = True
         self.ongoing_record = False
 
+    def set_definition(self, width, height):
+        self.width = width
+        self.height = height
+
     def capture(self, filename='pict.jpg'):
         self.cam.capture(filename)
+        self.cam.resolution = (self.width, self.height)
 
     def new_frame(self):
+        """
+        Get a new frame from the cam. We use the RAW interface here
+        returns an OpenCV object
+        """
         stream = open('image.data', 'wb')  # FIFO to store the picture
 
-        self.cam.start_preview()
-        time.sleep(2)
         self.cam.capture(stream, format='rgb')
-
         stream.seek(0)  # Rewind the FIFO
 
         # Construct a numpy array from the stream
         fwidth = (self.width + 31) // 32 * 32
         fheight = (self.height + 15) // 16 * 16
         image = np.fromfile(stream, dtype=uint8).\
-            reshape((fheight, fwidth, 3))[:height, :width, :]
+            reshape((fheight, fwidth, 3))[:self.height, :self.width, :]
+
+
+        #TODO: Catch an error here, and return false if needed
 
         # Transform the format into floats ?
         # image = image.astype(np.float, copy=False)
         # image = image / 255.0
+
+        return [True, image]
+
+    def new_frame_jpg(self):
+        """
+        Get a new frame from the cam. We use the jpg interface here, which compresses
+         the pictures on the fly (could be better for fast recordings)
+        """
+
+        # Create the in-memory stream
+        stream = io.BytesIO()
+
+        # Start the capture
+        self.cam.capture(stream, format='jpeg')
+
+        #TODO: Catch an error here, and return false if needed
+
+        # Construct a numpy array from the stream
+        data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+        # "Decode" the image from the array, preserving colour
+        image = cv2.imdecode(data, 1)
 
         return [True, image]
 
@@ -253,3 +285,6 @@ class PiCamera(FrameGrabber):
         self.cam.vflip = True
         self.cam.hflip = True
         self.cam.brightness = 60
+
+    def release(self):
+        self.cam.close()

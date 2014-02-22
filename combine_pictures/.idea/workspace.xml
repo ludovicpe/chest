@@ -2,9 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bd4c1698-0a7a-4bdf-8336-cc4e31f3b268" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/frameFusion.py" afterPath="$PROJECT_DIR$/frameFusion.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/test_piCamera" afterPath="" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/Combine pictures.iml" afterPath="$PROJECT_DIR$/.idea/Combine pictures.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/frameGrabber.py" afterPath="$PROJECT_DIR$/frameGrabber.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_piCamera" afterPath="$PROJECT_DIR$/test_piCamera" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test_piCamera.py" afterPath="$PROJECT_DIR$/test_piCamera.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Combine pictures.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -30,19 +32,17 @@
       <file leaf-file-name="frameFusion.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/frameFusion.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="90" column="29" selection-start="2932" selection-end="2953" vertical-scroll-proportion="-10.62963" vertical-offset="1297" max-vertical-offset="7038">
+            <state line="90" column="30" selection-start="2954" selection-end="2954" vertical-scroll-proportion="0.0" vertical-offset="1620" max-vertical-offset="7074">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="test_piCamera" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/test_piCamera">
+      <file leaf-file-name="test_piCamera.py" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/test_piCamera.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="61" column="34" selection-start="1733" selection-end="1733" vertical-scroll-proportion="0.9391892" vertical-offset="264" max-vertical-offset="1332">
-              <folding>
-                <element signature="e#90#118#0" expanded="true" />
-              </folding>
+            <state line="35" column="15" selection-start="817" selection-end="817" vertical-scroll-proportion="0.0" vertical-offset="426" max-vertical-offset="1460">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -50,19 +50,17 @@
       <file leaf-file-name="test_combine_pictures.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test_combine_pictures.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="42" column="0" selection-start="1171" selection-end="2502" vertical-scroll-proportion="0.0" vertical-offset="162" max-vertical-offset="1728">
+            <state line="42" column="0" selection-start="1171" selection-end="2502" vertical-scroll-proportion="0.0" vertical-offset="756" max-vertical-offset="1764">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="frameGrabber.py" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="frameGrabber.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/frameGrabber.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="252" column="32" selection-start="6735" selection-end="6735" vertical-scroll-proportion="0.0" vertical-offset="2946" max-vertical-offset="4644">
-              <folding>
-                <element signature="e#231#241#0" expanded="true" />
-              </folding>
+            <state line="220" column="28" selection-start="5736" selection-end="5736" vertical-scroll-proportion="0.4595186" vertical-offset="3820" max-vertical-offset="5760">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -86,9 +84,10 @@
     <option name="changedFiles">
       <list>
         <option value="$PROJECT_DIR$/test_combine_pictures.py" />
-        <option value="$PROJECT_DIR$/frameGrabber.py" />
         <option value="$PROJECT_DIR$/frameFusion.py" />
         <option value="$PROJECT_DIR$/test_piCamera" />
+        <option value="$PROJECT_DIR$/test_piCamera.py" />
+        <option value="$PROJECT_DIR$/frameGrabber.py" />
       </list>
     </option>
   </component>
@@ -216,7 +215,7 @@
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="options.splitter.details.proportions" value="0.2" />
     <property name="options.searchVisible" value="true" />
-    <property name="options.lastSelected" value="preferences.sourceCode.Python" />
+    <property name="options.lastSelected" value="reference.settingsdialog.IDE.editor.colors.Font" />
     <property name="recentsLimit" value="5" />
     <property name="FullScreen" value="false" />
   </component>
@@ -407,7 +406,7 @@
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18177083" sideWeight="0.67142856" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.17552084" sideWeight="0.67142856" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32857144" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -425,6 +424,11 @@
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
+  <component name="Vcs.Log.UiProperties">
+    <option name="RECENTLY_FILTERED_USER_GROUPS">
+      <collection />
+    </option>
+  </component>
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
@@ -440,22 +444,50 @@
           <url>file://$PROJECT_DIR$/frameFusion.py</url>
           <line>228</line>
         </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/frameFusion.py</url>
-          <line>110</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
       </breakpoints>
       <option name="time" value="4" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/frameFusion.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="90" column="30" selection-start="2954" selection-end="2954" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="7074">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_piCamera.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="35" column="15" selection-start="817" selection-end="817" vertical-scroll-proportion="0.0" vertical-offset="630" max-vertical-offset="1350">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_combine_pictures.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="42" column="0" selection-start="1171" selection-end="2502" vertical-scroll-proportion="0.0" vertical-offset="756" max-vertical-offset="1764">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frameGrabber.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="228" column="26" selection-start="5884" selection-end="5884" vertical-scroll-proportion="0.0" vertical-offset="4104" max-vertical-offset="4554">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frameGrabber.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="252" column="32" selection-start="6735" selection-end="6735" vertical-scroll-proportion="0.0" vertical-offset="2946" max-vertical-offset="4644">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/frameGrabber.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="219" column="0" selection-start="5674" selection-end="5674" vertical-scroll-proportion="0.0" vertical-offset="3549" max-vertical-offset="4446">
-          <folding>
-            <element signature="e#231#241#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -463,15 +495,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state line="304" column="0" selection-start="11157" selection-end="11157" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="7020">
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test_piCamera">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="0" selection-start="298" selection-end="298" vertical-scroll-proportion="0.0" vertical-offset="288" max-vertical-offset="396">
-          <folding>
-            <element signature="e#90#118#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -485,9 +508,7 @@
     <entry file="file://$PROJECT_DIR$/frameGrabber.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="207" column="0" selection-start="5323" selection-end="5323" vertical-scroll-proportion="0.0" vertical-offset="2863" max-vertical-offset="4086">
-          <folding>
-            <element signature="e#231#241#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -501,9 +522,7 @@
     <entry file="file://$PROJECT_DIR$/frameGrabber.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="52" column="30" selection-start="1113" selection-end="1113" vertical-scroll-proportion="0.0" vertical-offset="936" max-vertical-offset="3690">
-          <folding>
-            <element signature="e#231#241#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -517,9 +536,7 @@
     <entry file="file://$PROJECT_DIR$/frameGrabber.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="88" column="29" selection-start="2150" selection-end="2150" vertical-scroll-proportion="0.0" vertical-offset="1009" max-vertical-offset="3348">
-          <folding>
-            <element signature="e#231#241#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -542,15 +559,6 @@
         <state line="20" column="23" selection-start="0" selection-end="289" vertical-scroll-proportion="0.40862656" vertical-offset="0" max-vertical-offset="881" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/frameGrabber.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="252" column="32" selection-start="6735" selection-end="6735" vertical-scroll-proportion="0.0" vertical-offset="2946" max-vertical-offset="4644">
-          <folding>
-            <element signature="e#231#241#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test_combine_pictures.py">
       <provider selected="true" editor-type-id="text-editor">
         <state line="42" column="0" selection-start="1171" selection-end="2502" vertical-scroll-proportion="0.0" vertical-offset="162" max-vertical-offset="1728">
@@ -560,17 +568,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/frameFusion.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="90" column="29" selection-start="2932" selection-end="2953" vertical-scroll-proportion="-10.62963" vertical-offset="1297" max-vertical-offset="7038">
+        <state line="90" column="30" selection-start="2954" selection-end="2954" vertical-scroll-proportion="0.0" vertical-offset="1620" max-vertical-offset="7038">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test_piCamera">
+    <entry file="file://$PROJECT_DIR$/test_piCamera.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="61" column="34" selection-start="1733" selection-end="1733" vertical-scroll-proportion="0.9391892" vertical-offset="264" max-vertical-offset="1332">
-          <folding>
-            <element signature="e#90#118#0" expanded="true" />
-          </folding>
+        <state line="35" column="15" selection-start="817" selection-end="817" vertical-scroll-proportion="0.0" vertical-offset="378" max-vertical-offset="1314">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/frameGrabber.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="220" column="28" selection-start="5736" selection-end="5736" vertical-scroll-proportion="0.4595186" vertical-offset="3820" max-vertical-offset="5760">
+          <folding />
         </state>
       </provider>
     </entry>
