@@ -44,6 +44,7 @@ class FrameFusion:
         self.n_max_corners = 400
         self.corners_q_level = 4
         self.motion_comp = motion_compensation
+        self.motion_compensation_method = 'shi_tomasi'
         self.reset = False
 
         # Allocate buffers
@@ -51,7 +52,6 @@ class FrameFusion:
         self.frame_acc_disp = np.float32(frame_first)
         self.frame_eq = np.float32(frame_first)
         self.frame_prev = frame_first
-        self.motion_compensation_method = 'shi_tomasi'
 
         # Do the first accumulation
         cv2.equalizeHist(frame_first, self.frame_acc)
@@ -87,6 +87,18 @@ class FrameFusion:
             ValueError('Wrong argument for motion compensation')
 
         return success
+
+    def get_fused_frame(self, integer_frame=True):
+	# Return the frame in float
+	if not integer_frame:
+	    return self.frame_acc_disp
+
+	# Convert to uint8 and return (default)
+	else :
+	    self.frame_acc_disp *= 255
+	    frame_disp_int = self.frame_acc_disp.astype(int)
+	    return frame_disp_int
+    	    	
 
     def pile_up(self, new_frame):
         """

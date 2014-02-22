@@ -7,9 +7,16 @@ Created on Sat Dec 21 12:07:45 2013
 Root and inherited classes to wrap different possible picture inputs,
 such as a series of files, a movie file, or a connected camera
 """
+
+from __future__ import division
 import cv2
 import os
 import utils as ut
+from time import sleep
+
+import picamera
+import numpy as np
+import io, time
 
 
 class FrameGrabber:
@@ -97,7 +104,7 @@ class PictsFile(FrameGrabber):
                         if picture_list[n_files] is None:
                             picture_list.pop()
                             print "Error loading file {}".format(filename)
-                        else :
+                        else:
                             n_files += 1
 
                     except:
@@ -110,7 +117,7 @@ class PictsFile(FrameGrabber):
             self.n_frames += 1
             return [True, self.pict_list[self.n_frames]]
 
-        else :
+        else:
             return [False, []]
 
     def show(self):
@@ -136,7 +143,7 @@ class VideoFile(FrameGrabber):
             self.n_frame += 1
             return [True, self.frame]
 
-        else :
+        else:
             return [False, []]
 
     def show(self):
@@ -197,3 +204,89 @@ class Webcam(FrameGrabber):
         self.cam.release()
 
 
+class PiCamera(FrameGrabber):
+    def __init__(self):
+        # Declare the new interface with the cam,
+        # select a small definition by default
+        self.cam = picamera.PiCamera()
+        self.width = 2592 # 800
+        self.height = 1944 # 600
+        self.cam.resolution = (self.width, self.height)
+        self.n_frames = 0
+        self.keep_going = True
+        self.ongoing_record = False
+
+    def set_definition(self, width, height):
+        self.width = width
+        self.height = height
+
+    def capture(self, filename='pict.jpg'):
+        self.cam.capture(filename)
+        self.cam.resolution = (self.width, self.height)
+
+    def new_frame_raw(self):
+        """
+        Get a new frame from the cam. We use the RAW interface here
+        returns an OpenCV object
+        """
+        stream = open('image.data', 'wb')  # FIFO to store the picture
+
+        self.cam.capture(stream, format='rgb')
+        stream.seek(0)  # Rewind the FIFO
+
+        # Construct a numpy array from the stream
+        fwidth = (self.width + 31) // 32 * 32
+        fheight = (self.height + 15) // 16 * 16
+        image = np.fromfile(stream, dtype=uint8).\
+            reshape((fheight, fwidth, 3))[:self.height, :self.width, :]
+
+
+        #TODO: Catch an error here, and return false if needed
+
+        # Transform the format into floats ?
+        # image = image.astype(np.float, copy=False)
+        # image = image / 255.0
+
+        return [True, image]
+
+    def new_frame(self):
+        """
+        Get a new frame from the cam. We use the jpg interface here, which compresses
+         the pictures on the fly (could be better for fast recordings)
+        """
+
+        # Create the in-memory stream
+	# TODO: move it to the constructor, do it once only
+        stream = io.BytesIO()
+
+        # Start the capture
+        self.cam.capture(stream, format='jpeg')
+
+        #TODO: Catch an error here, and return false if needed
+
+        # Construct a numpy array from the stream
+        data = np.fromstring(stream.getvalue(), dtype=np.uint8)
+
+        # "Decode" the image from the array, preserving colour
+        image = cv2.imdecode(data, 1)
+
+        return [True, image]
+
+    def record_movie(self, filename='movie.h264'):
+        if not self.ongoing_record:
+            self.cam.start_recording(filename)
+            self.ongoing_record = True
+
+    def stop_recording(self):
+        if self.ongoing_record:
+            self.cam.stop_recording()
+            self.ongoing_record = False
+
+    def show(self):
+        self.cam.start_preview()
+        self.cam.vflip = True
+        self.cam.hflip = True
+        self.cam.brightness = 60
+
+    def release(self):
+        self.cam.close()
