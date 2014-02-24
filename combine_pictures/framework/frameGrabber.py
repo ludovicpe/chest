@@ -13,11 +13,14 @@ import cv2
 import os
 import utils as ut
 from time import sleep
-
-import picamera
+  
 import numpy as np
 import io, time
 
+try :
+  import picamera
+except ImportError:
+  print "Could not import RaspberryPi camera dependencies"
 
 class FrameGrabber:
     """
