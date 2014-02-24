@@ -5,6 +5,9 @@ Created on Thu Sep 12 21:54:19 2013
 @author: benjamin lefaudeux
 """
 
+import sys
+sys.path.insert(0, '../framework')
+
 import cv2          # OpenCV
 import frameGrabber # Wrap the frame grabbing process
 import frameFusion  # Wrap the frame accumulation process

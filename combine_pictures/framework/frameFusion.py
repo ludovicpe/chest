@@ -115,7 +115,7 @@ class FrameFusion:
         # Do the accumulation with motion compensation
         # -- we offset the previous accumulation
         if self.motion_comp and self.n_fused_frames > 0:
-            b_success = self.compensate_interframe_motion(new_frame, 'orb')
+            b_success = self.compensate_interframe_motion(new_frame, 'shi_tomasi')
 
             if b_success:
                 print "Frames aligned"
