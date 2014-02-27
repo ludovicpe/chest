@@ -1,0 +1,4 @@
+Here you can find some scripts testing the frameGrabber and frameFusion code (for now)
+The RasberryPi camera has a distinct interface, and won't work with the standard 'camera' test
+OpenCV with python bindings and picamera (python-picamera) need to be installed beforehand.
+
