@@ -57,6 +57,9 @@ def run(n_max_frame):
             else:
                 frame_accumulator.pile_up(frame_bw)
 
+	    # Show what's going on :
+	    frame_accumulator.show
+
             # Store the results :
 	    stop_time = time.time()
 	    print "Store frame - {0:.2f}s to process".format(stop_time-start_time)
