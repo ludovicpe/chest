@@ -13,14 +13,14 @@ import cv2
 import os
 import utils as ut
 from time import sleep
-  
+
 import numpy as np
 import io, time
 
 try :
   import picamera
 except ImportError:
-  print "Could not import RaspberryPi camera dependencies"
+  print "Could not import RaspberryPi camera dependencies. \n -- Please install picamera --"
 
 class FrameGrabber:
     """
@@ -198,7 +198,7 @@ class Webcam(FrameGrabber):
                 return
 
             else :
-                b_quit = FrameGrabber.__show_pict_window(self, self.frame)
+                b_quit = self.__show_pict_window(self.frame)
                 keep_going = keep_going and not b_quit
 
     # Re-implement this method
