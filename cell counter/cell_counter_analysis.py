@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import numpy as np
 import pylab as mp
 import glob
@@ -33,13 +34,12 @@ def ComputeMainAxis(records):
     vilosity = np.array(records[2])
     crypt_botton = np.array(records[0])
     crypt_top = np.array(records[1])
-    main_axis = vilosity - crypt_top
-
+    main_axis = vilosity - crypt_top    
     return main_axis
 
 # Compute the cell repartition with respect to the chosen referential, and show statistics
 def ComputeCellCoordinates(records, main_axis, start):
-    coord = np.empty((1,1))
+    coord = np.array([0,0])
 
     length = float(main_axis[0] * main_axis[0] + main_axis[1] * main_axis[1] + main_axis[2] * main_axis[2])
 
@@ -74,11 +74,13 @@ def FolderPipeline(folder):
     file_exist = False
 
     for file in files:
+        print "Reading "+file
         res = Pipeline(file)
+        
         # PlotHisto(res)
-        coord_ovrl = np.append(coord_ovrl, res)
         if len(res) >0:
             file_exist = True
+            coord_ovrl = np.append(coord_ovrl, res)
 
     if file_exist:
         mp.figure()
@@ -86,9 +88,12 @@ def FolderPipeline(folder):
         mp.savefig(folder + '/histogram.png', bbox_inches='tight')
         mp.show()
         
+
 # Get all the subfolders and plot
-dirList = os.listdir("./") # current directory
+dirList = os.listdir(os.path.dirname(os.path.realpath(__file__))) # current directory
 
 for dir in dirList:
-  if os.path.isdir(dir) == True:
-        FolderPipeline(dir)
+    folder = os.path.dirname(os.path.realpath(__file__)) + '/' + dir
+    if os.path.isdir(folder) == True:
+            FolderPipeline(folder)        
+
