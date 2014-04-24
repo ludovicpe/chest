@@ -33,9 +33,9 @@ def ComputeMainAxis(records):
     vilosity = np.array(records[2])
     crypt_botton = np.array(records[0])
     crypt_top = np.array(records[1])
-
     main_axis = vilosity - crypt_top
-    return main_axis[0]
+
+    return main_axis
 
 # Compute the cell repartition with respect to the chosen referential, and show statistics
 def ComputeCellCoordinates(records, main_axis, start):
@@ -59,8 +59,11 @@ def PlotHisto(coords):
 # Pipeline for one file
 def Pipeline(file):
     records = ParseCellXML(file)
-    main_axis = ComputeMainAxis(records)
-    return ComputeCellCoordinates(records, main_axis, records[0][0]) # records[0][0] : bas de la crypte, records[1][0] haut de la crypte
+    if len(records) > 0:
+        main_axis = ComputeMainAxis(records)
+        return ComputeCellCoordinates(records, main_axis[0], records[0][0]) # records[0][0] : bas de la crypte, records[1][0] haut de la crypte
+    else:
+        return []
 
 # Get all the XML files in this folder and plot
 def FolderPipeline(folder):
@@ -74,13 +77,14 @@ def FolderPipeline(folder):
         res = Pipeline(file)
         # PlotHisto(res)
         coord_ovrl = np.append(coord_ovrl, res)
-        file_exist = True
+        if len(res) >0:
+            file_exist = True
 
     if file_exist:
         mp.figure()
-	mp.hist(coord_ovrl, 30)
-	mp.savefig(folder + '/histogram.png', bbox_inches='tight')
-	mp.show()
+        mp.hist(coord_ovrl, 30)
+        mp.savefig(folder + '/histogram.png', bbox_inches='tight')
+        mp.show()
         
 # Get all the subfolders and plot
 dirList = os.listdir("./") # current directory
