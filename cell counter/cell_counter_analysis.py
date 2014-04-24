@@ -2,13 +2,12 @@
 import numpy as np
 import pylab as mp
 import glob
+import os
 
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
-
-__author__ = 'benjamin lefaudeux'
 
 # Parse the XML file
 def ParseCellXML(file):
@@ -23,9 +22,8 @@ def ParseCellXML(file):
             x = int(marker.find('MarkerX').text)
             y = int(marker.find('MarkerY').text)
             z = int(marker.find('MarkerZ').text)
-
             mark.append([x, y, z])
-        print len(mark)
+
         records.append(mark)
 
     return records
@@ -36,17 +34,18 @@ def ComputeMainAxis(records):
     crypt_botton = np.array(records[0])
     crypt_top = np.array(records[1])
 
-    return vilosity - crypt_top
+    main_axis = vilosity - crypt_top
+    return main_axis[0]
 
 # Compute the cell repartition with respect to the chosen referential, and show statistics
 def ComputeCellCoordinates(records, main_axis, start):
     coord = np.empty((1,1))
 
-    length = float(main_axis[0][0] * main_axis[0][0] + main_axis[0][1] * main_axis[0][1] + main_axis[0][2] * main_axis[0][2])
+    length = float(main_axis[0] * main_axis[0] + main_axis[1] * main_axis[1] + main_axis[2] * main_axis[2])
 
     for item in records[3]:
         pose = [item[0] - start[0], item[1] - start[1], item[2] - start[2]]
-        coord_raw = int(pose[0] * main_axis[0][0]) + int(pose[1] * main_axis[0][1]) + int(pose[2] * main_axis[0][2])
+        coord_raw = int(pose[0] * main_axis[0]) + int(pose[1] * main_axis[1]) + int(pose[2] * main_axis[2])
         coord_normalized = coord_raw / length
         coord = np.append( coord, coord_normalized)
     return coord
@@ -63,17 +62,29 @@ def Pipeline(file):
     main_axis = ComputeMainAxis(records)
     return ComputeCellCoordinates(records, main_axis, records[0][0]) # records[0][0] : bas de la crypte, records[1][0] haut de la crypte
 
-# Get all the XML files in this folder
-files = glob.glob("/home/benjamin/Git/chest/cell counter/*.xml")
+# Get all the XML files in this folder and plot
+def FolderPipeline(folder):
+    coord_ovrl = np.array([])
 
-x = []
-coord_ovrl = np.array(x)
+    files = glob.glob(folder + "/*.xml")
 
-for file in files:
-    res = Pipeline(file)
-    PlotHisto(res)
+    file_exist = False
 
-    coord_ovrl = np.append(coord_ovrl, res)
+    for file in files:
+        res = Pipeline(file)
+        # PlotHisto(res)
+        coord_ovrl = np.append(coord_ovrl, res)
+        file_exist = True
 
-PlotHisto(coord_ovrl)
+    if file_exist:
+        mp.figure()
+	mp.hist(coord_ovrl, 30)
+	mp.savefig(folder + '/histogram.png', bbox_inches='tight')
+	mp.show()
+        
+# Get all the subfolders and plot
+dirList = os.listdir("./") # current directory
 
+for dir in dirList:
+  if os.path.isdir(dir) == True:
+        FolderPipeline(dir)
