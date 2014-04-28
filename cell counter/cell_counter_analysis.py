@@ -32,9 +32,9 @@ def ParseCellXML(file):
 # Get the coordinates for the crypt and the vilosity
 def ComputeMainAxis(records):
     vilosity = np.array(records[2])
-    crypt_botton = np.array(records[0])
+    crypt_bottom = np.array(records[0])
     crypt_top = np.array(records[1])
-    main_axis = vilosity - crypt_top    
+    main_axis = vilosity - crypt_bottom
     return main_axis
 
 # Compute the cell repartition with respect to the chosen referential, and show statistics
@@ -70,14 +70,12 @@ def FolderPipeline(folder):
     coord_ovrl = np.array([])
 
     files = glob.glob(folder + "/*.xml")
-
     file_exist = False
 
     for file in files:
         print "Reading "+file
         res = Pipeline(file)
-        
-        # PlotHisto(res)
+
         if len(res) >0:
             file_exist = True
             coord_ovrl = np.append(coord_ovrl, res)
@@ -85,6 +83,7 @@ def FolderPipeline(folder):
     if file_exist:
         mp.figure()
         mp.hist(coord_ovrl, 30)
+        mp.title(folder.split('/')[-1])
         mp.savefig(folder + '/histogram.png', bbox_inches='tight')
         mp.show()
         

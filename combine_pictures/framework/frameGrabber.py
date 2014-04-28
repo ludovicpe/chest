@@ -201,6 +201,8 @@ class Webcam(FrameGrabber):
                 b_quit = self.__show_pict_window(self.frame)
                 keep_going = keep_going and not b_quit
 
+        return keep_going
+
     # Re-implement this method
     # in this case we really want to release the connected cam
     def release(self):
