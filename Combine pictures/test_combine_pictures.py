@@ -85,4 +85,4 @@ def run(n_max_frame):
     frame_source.release()
 
 # Bam !
-run(200)
+run(10)
