@@ -26,10 +26,6 @@ class FrameGrabber:
     """
     The overall FrameGrabber class, from which all our sub-classes inherit
     """
-    n_frame = 0
-    n_max_frames = 0
-    size_x = 0
-    size_y = 0
 
     def __init__(self):
         # The default constructor
@@ -67,7 +63,6 @@ class PictsFile(FrameGrabber):
     """
     Inherited class : read a sequence of pictures
     """
-
     # The constructor : get a list of all the frames, and the number of frames
     def __init__(self, folder):
         [self.pict_list, self.n_max_frames] = self.__get_pict_files(folder)
@@ -131,7 +126,6 @@ class VideoFile(FrameGrabber):
     """
     Inherited class : read a video file
     """
-
     # The constructor : get a handle on a video file
     def __init__(self, filename):
         self.n_frames = 0
@@ -157,7 +151,6 @@ class Webcam(FrameGrabber):
     """
     Inherited class : read a video stream from a connected camera
     """
-
     def __init__(self, device_id=0):
         self.n_frames = 0
         self.cam = cv2.VideoCapture(device_id)
@@ -207,7 +200,6 @@ class Webcam(FrameGrabber):
     # in this case we really want to release the connected cam
     def release(self):
         self.cam.release()
-
 
 class PiCamera(FrameGrabber):
     def __init__(self):
