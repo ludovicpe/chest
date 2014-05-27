@@ -3,18 +3,22 @@
 Created on Wed Apr 30 15:44:33 2014
 
 @author: malvache
+
+Implements a Star class, a Starlist class, the parsing of a csv database, and methods to visualize all this.
+
 """
 
 import pylab as pl
 from math import *
+
 
 def rotate(x, y, alpha):
     x1 = x*cos(alpha)-y*sin(alpha)
     y1 = y*cos(alpha)+x*sin(alpha)
     return (x1, y1)
 
-class Star:
-    
+
+class Star:    
     def __init__(self, name, ra, dec, mag):
         self.name = name
         self.ra = float(ra)
@@ -71,14 +75,18 @@ class Star:
             yStereo = -xCart2/(1-zCart2)
             xStereo = -yCart2/(1-zCart2)
         return (xStereo, yStereo)
-        
+
+
 class StarList:
 
     def __init__(self):
         self.stars = []
-    
-    #Get data from database
+
     def setData(self,filename):
+        """
+        Get data from database
+        :param csv file
+        """
         file = open(filename,"r")
         i=0
         for line in file:
@@ -88,75 +96,64 @@ class StarList:
             i+=1
     
     def saveData(self, filename):
+	    # TODO: Malmeuh
         pass
         # Save as binary file
         # file = open(filename,"w")
         # file.write()
         
     def loadData(self, filename):
+        # TODO: Malmeuh
         pass
         # Load binary file
     
-    def hist(self):#magnitudes histogram
-        #x=range(len(self.stars))
+    def hist(self):
+        """
+        Show an histogram of magnitudes
+        """
         y = []
         for star in self.stars:
             y.append(star.mag) #incrémente automatiquement
+
         pl.figure(1)
         pl.hist(y, 200)
-        
-    #Plot stars with a condition of magnitude
-    #Sky depends on localisation (lat), date (day) and direction of observation (dir)
+
     def sky(self, mag1, mag2, info):
+        """
+        Plot stars with a condition of magnitude
+        Sky depends on localisation (lat), date (day) and direction of observation (dir)
+
+        :param mag1: max magnitude
+        :param mag2: min magnitude
+        :param info: localisation (lat), date (day) and direction of observation (dir)
+        """
         pl.figure(2)
         self.plot(mag1, -30, 'ro', info)
         self.plot(mag2, mag1, 'r+', info)
-        UMa=[67089,65174,62758,59593,57829,53754,53905] # Ursa Major
-        Cet=[3413]
-        star_list.constellation(UMa, 'bo', info) # Show constellation
-        star_list.constellation(Cet, 'bo', info)        
+        UMa = [67089,65174,62758,59593,57829,53754,53905] # Ursa Major
+        Cet = [3413]
+        self.constellation(UMa, 'bo', info) # Show constellation
+        self.constellation(Cet, 'bo', info)
         
     def plot(self, mag1, mag2, style, info):
         x = []
         y = []
+
         for star in self.stars:
-            if star.mag<mag1 and star.mag>mag2:
-                (xtmp, ytmp)=star.stereoProj(info)
+            if mag2 < star.mag < mag1:
+                (xtmp, ytmp) = star.stereoProj(info)
                 x.append(xtmp)
                 y.append(ytmp)
+
         pl.plot(x, y, style)
         
     def constellation(self, num, style, info):
         x = []
         y = []
+
         for i in num:
             (xtmp, ytmp) = self.stars[i].stereoProj(info)
             x.append(xtmp)
             y.append(ytmp)
+
         pl.plot(x, y, style)
-
-# Create starList from database            
-star_list = StarList()
-star_list.setData('hygxyz.csv')
-# star_list.hist()
-
-# User info
-#Direction of observation (azm,alt) in radiant
-azm = 3*pi/2 # 0: North, pi: South
-alt = pi/6 # 0: horizon, pi/2: zenith
-#Position (lon,lat) in radiant
-lon = (30+46./60)*pi/180#(2+20./60)*pi/180 # >0 for East and <0 for West ???
-lat = (46+30./60)*pi/180 # >0 for North and <0 for South
-#Date (day,hour)
-year = 2014
-day = 46 #num of the day 1-366
-hour = 18
-#Group info
-#Normalize by reference date 2000 03 21 at 00 UT
-numDay = day + (year-2000)*365+(year-2000)/4 #bissextile years
-info=[azm, alt, lon, lat, numDay, hour]
-
-# Show sky
-star_list.sky(3, 5, info)
-pl.axis([-0.5, 0.5, -0.5, 0.5])
-pl.show()
