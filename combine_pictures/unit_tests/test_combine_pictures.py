@@ -76,7 +76,7 @@ def run(n_max_frame):
 
             # Initialize the accumulated frame
             if i == 0:
-                frame_accumulator = frameFusion.FrameFusion(frame_bw, gamma, True)
+                frame_accumulator = frameFusion.FrameFusion(frame_bw, gamma, False)
 
             # Process frames :
             else:
@@ -92,10 +92,5 @@ def run(n_max_frame):
 
     frame_source.release()
 
-<<<<<<< HEAD:Combine pictures/test_combine_pictures.py
-# Bam !
-run(10)
-=======
 # Bam ! Run this stuff
 run(500)
->>>>>>> master:combine_pictures/unit_tests/test_combine_pictures.py
