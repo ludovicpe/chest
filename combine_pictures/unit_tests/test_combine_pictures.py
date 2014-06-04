@@ -2,7 +2,7 @@
 """
 Created on Thu Sep 12 21:54:19 2013
 
-@author: benjamin lefaudeux
+@author: Blefaudeux
 """
 
 import sys
@@ -76,7 +76,7 @@ def run(n_max_frame):
 
             # Initialize the accumulated frame
             if i == 0:
-                frame_accumulator = frameFusion.FrameFusion(frame_bw, gamma, True)
+                frame_accumulator = frameFusion.FrameFusion(frame_bw, gamma, False)
 
             # Process frames :
             else:
