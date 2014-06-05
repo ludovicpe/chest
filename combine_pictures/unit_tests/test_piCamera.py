@@ -67,7 +67,7 @@ def run(n_max_frame):
             cv2.imwrite(filename, frame_accumulator.get_fused_frame())
 
             filename = base_filename + str(i) + 'raw' + '.jpg'
-	        cv2.imwrite(filename, frame_bw)
+	    cv2.imwrite(filename, frame_bw)
             i += 1
 
     print "Bybye.."

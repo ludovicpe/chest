@@ -206,8 +206,8 @@ class PiCamera(FrameGrabber):
         # Declare the new interface with the cam,
         # select a small definition by default
         self.cam = picamera.PiCamera()
-        self.width = 2592 # 800
-        self.height = 1944 # 600
+        self.width = 800
+        self.height = 600
         self.cam.resolution = (self.width, self.height)
         self.n_frames = 0
         self.keep_going = True
